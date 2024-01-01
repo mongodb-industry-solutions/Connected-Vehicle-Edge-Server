@@ -73,3 +73,6 @@ Unity\ Car/[Aa]ssets/[Ss]treamingAssets/aa/*
 
 # Ignore DS_Store
 .DS_Store
+
+#Ignore Edge Server
+edge_server/
