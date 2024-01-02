@@ -18,41 +18,34 @@ public class Animations : MonoBehaviour
 
     public GameObject TailLights;
 
-    
+    public AudioSource EngineSound;
+    public AudioClip EngineStart, EngineIdle, EngineStop;
+
+    public GameObject SportCarVibration;
+    private Coroutine carVibrationCoroutine;
     
     private async void Start()
     {
         
-        var realmApp = App.Create(new AppConfiguration(Constants.Realm.AppId)
+        
+        if (RealmManager.Instance.RealmInstance != null)
         {
-            BaseUri = new Uri(Constants.Realm.baseURL),
-        });
-        var syncUser = await realmApp.LogInAsync(Credentials.EmailPassword(Constants.Realm.UserName, Constants.Realm.Password));
-        var config = new FlexibleSyncConfiguration(syncUser)
-        {
-            PopulateInitialSubscriptions = (realm) =>
-            {
-                var VehicleData = realm.All<vehicle_data>();
-                realm.Subscriptions.Add(VehicleData, new SubscriptionOptions { Name = "VehicleData" });
-            }
-        };
-        // Console.WriteLine(realm.Config.DatabasePath);
-        try
-        {
-            realm = await Realm.GetInstanceAsync(config);
+            // If Realm is already initialized
+            SubscribeToChanges(RealmManager.Instance.RealmInstance);
         }
-        catch (Exception ex)
+        else
         {
-            Debug.LogError($@"Error creating or opening the realm file. {ex.Message}");
-            return;
+            // Wait for Realm to be initialized
+            RealmManager.Instance.OnRealmReady += OnRealmReady;
         }
-
-        SubscribeToChanges();
-
-        // StartCoroutine(ModifyVehicleDataAfterDelay(2));
-
     }
-    private void SubscribeToChanges()
+    private void OnRealmReady()
+    {
+        SubscribeToChanges(RealmManager.Instance.RealmInstance);
+        // Unsubscribe from the event to avoid potential memory leaks
+        RealmManager.Instance.OnRealmReady -= OnRealmReady;
+    }
+    private void SubscribeToChanges(Realm realm)
     {
 
 
@@ -83,14 +76,30 @@ public class Animations : MonoBehaviour
                 {
                     var modifiedObject = sender[index];
                     // Ligths Modifications
-                    if(modifiedObject.LightsOn==true)
+                    if(modifiedObject.LightsOn==true && FrontLights.activeSelf==false)
                     {
+                        EngineSound.clip = EngineStart;
+                        EngineSound.loop = false;
+                        EngineSound.Play();
+                        Invoke("EngineIdleSound", EngineSound.clip.length);
                         FrontLights.SetActive(true);
                         TailLights.SetActive(true);
+                        StartVibration();
+                        if (modifiedObject.BatteryCurrent == 0){
+                            realm.Write(() =>
+                            {
+                                modifiedObject.LightsOn = false;
+                            });
+                        }
                     }
-                    else if(modifiedObject.LightsOn==false){
+                    else if(modifiedObject.LightsOn==false && FrontLights.activeSelf==true){
+
+                        EngineSound.clip = EngineStop;
+                        EngineSound.loop = false;
+                        EngineSound.Play();
                         FrontLights.SetActive(false);
                         TailLights.SetActive(false);
+                        StopVibration();
                     }
 
                     // Open Door Modifications
@@ -122,63 +131,54 @@ public class Animations : MonoBehaviour
         });
     }
 
-    // private IEnumerator ModifyVehicleDataAfterDelay(float delay)
-    // {
-    //     // Wait for the specified delay
-    //     yield return new WaitForSeconds(delay);
+    void EngineIdleSound()
+    {
+        if(FrontLights.activeSelf)
+        {
+            EngineSound.clip = EngineIdle;
+            EngineSound.loop = true;
+            EngineSound.Play();
+        }
+    }
 
-    //     // Modify a vehicle_data object inside a write transaction
-    //     realm.Write(() =>
-    //     {
-    //         // Convert the string to ObjectId
-    //         var objectId = new ObjectId("658876fde27a68ff985cdb4d");  // Replace "some_id" with the actual ObjectId string
+    void StartVibration()
+    {
+        // Start vibration effect
+        if (carVibrationCoroutine == null)
+        {
+            carVibrationCoroutine = StartCoroutine(VibrateCar());
+        }
+    }
 
-    //         // Find the vehicle_data object using ObjectId or create a new one if none exists
-    //         var vehicle = realm.Find<vehicle_data>(objectId);
+    void StopVibration()
+    {
+        // Stop all coroutines to stop the vibration
+        if (carVibrationCoroutine != null)
+        {
+            StopCoroutine(carVibrationCoroutine);
+            carVibrationCoroutine = null;
+        }
+    }
 
-    //         // Modify properties of the vehicle_data object
-    //         vehicle.LightsOn = false; // Example modification
-    //     });
+    IEnumerator VibrateCar()
+    {
+        // Original position of the car
+        Vector3 originalPosition = SportCarVibration.transform.position;
+        float vibrationIntensity = 0.009f; // You can adjust this value for more or less vibration
 
-    //     Debug.Log("Vehicle data modified after delay.");
-    // }
+        while (true)
+        {
+            // Simulate gentle vibration by small random position adjustments
+            SportCarVibration.transform.position = originalPosition + new Vector3(
+                UnityEngine.Random.Range(-vibrationIntensity, vibrationIntensity),
+                UnityEngine.Random.Range(-vibrationIntensity, vibrationIntensity),
+                UnityEngine.Random.Range(-vibrationIntensity, vibrationIntensity)
+            );
 
+            // Wait for a short period of time before the next vibration
+            yield return new WaitForSeconds(0.07f); // Adjust the time for faster or slower vibration
+        }
+    }
 
-//     private void OnCollectionChanged(IRealmCollection<vehicle_data> collection, ChangeSet changes)
-//     {
-//     realm.SubscribeForNotifications(OnCollectionChanged);
-//         // if (error != null)
-//         // {
-//         //     Debug.LogError("Error occurred: " + error.Message);
-//         //     return;
-//         // }
-
-//         if (changes != null)
-//         {
-//             // Iterate through the inserted documents
-//             foreach (var insertIndex in changes.InsertedIndices)
-//             {
-//                 var vehicle_data_doc = collection[insertIndex];
-//                 Debug.Log("New document inserted: " + vehicle_data_doc);
-//                 if(sensor_doc.Topic=="i/bme680")
-//                 {
-//                     // Temperature = sensor_doc.T ?? 22;;
-//                     // Pressure = sensor_doc.P ?? 1080;;
-//                     // Humidity = sensor_doc.H ?? 30;;
-//                     // AirQuality = sensor_doc.Iaq ?? 150;;
-//                 }
-//                 else if(sensor_doc.Topic=="i/ldr"){
-//                     RoomBrigthness = sensor_doc.Br;
-//                 }
-//                 // Debug.Log(newMessage);
-// //                 SensorText.text = $@"Temperature [°C]: {Temperature}
-// // Room Brightness [%]: {RoomBrigthness}
-// // Air Pressure [hPa]: {Pressure}
-// // Humidity [%]: {Humidity}
-// // Air Quality Index [0-500]: {AirQuality}";
-//                 Debug.Log("Running again...");
-//                 // Debug.Log(sensor_doc);
-//             }
-//         }
-    // }
+    
 }
