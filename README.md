@@ -92,3 +92,30 @@ If you are a MongoDB customer, contact your Product or Account Representative to
 
 
 Congrats!! You have completed Step 2 of this demo. Go to step 3 to continue. 
+
+
+## Part 3 - Set Up Unity
+# Unity
+```
+sealed class Constants
+{
+    public sealed class Realm
+    {
+        public const string AppId = ">>YOUR-REALM-APP-ID<<";
+        public const string baseURL = "http://localhost:80";
+        public const string UserName = ">>YOUR-REALM-USER-NAME<<";
+        public const string Password = ">>YOUR-REALM-PASSWORD<<";
+        public static bool flag = false;
+    }
+}
+```
+
+
+## Part 4 - Set Up the iOS Swift Apps
+# iOS Swift Apps
+```
+APP_ID = >>YOUR-APP-ID<<
+USER = >>YOUR-USER<<
+PASSWORD = >>YOUR-PASSWORD<<
+```
+

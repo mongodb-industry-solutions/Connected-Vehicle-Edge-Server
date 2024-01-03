@@ -78,4 +78,6 @@ Unity\ Car/[Aa]ssets/[Ss]treamingAssets/aa/*
 edge_server/
 
 #Ignore configs
-Unity Car/Assets/Constants.cs
+Unity\ Car/Assets/Constants.cs
+iOS-App-Atlas/iOS-App-Atlas/Config.xcconfig
+iOS-App-Edge-Server/iOS-App-Atlas/Config.xcconfig
