@@ -76,3 +76,6 @@ Unity\ Car/[Aa]ssets/[Ss]treamingAssets/aa/*
 
 #Ignore Edge Server
 edge_server/
+
+#Ignore configs
+Unity Car/Assets/Constants.cs
