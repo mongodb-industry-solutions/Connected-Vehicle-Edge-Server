@@ -79,5 +79,6 @@ edge_server/
 
 #Ignore configs
 Unity\ Car/Assets/Constants.cs
+Unity\ Car/Assets/Constants.cs.meta
 iOS-App-Atlas/iOS-App-Atlas/Config.xcconfig
-iOS-App-Edge-Server/iOS-App-Atlas/Config.xcconfig
+iOS-App-Edge-Server/iOS-App-Edge-Server/Config.xcconfig
