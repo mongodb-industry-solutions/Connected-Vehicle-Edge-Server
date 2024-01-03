@@ -30,6 +30,7 @@
 		0A0CA29D2B439C4300A9C3BA /* LoginView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LoginView.swift; sourceTree = "<group>"; };
 		0A0CA29F2B439C6F00A9C3BA /* Model.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Model.swift; sourceTree = "<group>"; };
 		0A0CA2A12B439C8400A9C3BA /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist; path = Info.plist; sourceTree = "<group>"; };
+		0A0CA2CE2B45855200A9C3BA /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +74,7 @@
 				0A0CA2992B439BF300A9C3BA /* VehiclesView.swift */,
 				0A0CA29D2B439C4300A9C3BA /* LoginView.swift */,
 				0A0CA29F2B439C6F00A9C3BA /* Model.swift */,
+				0A0CA2CE2B45855200A9C3BA /* Config.xcconfig */,
 			);
 			path = "iOS-App-Edge-Server";
 			sourceTree = "<group>";
@@ -176,6 +178,7 @@
 /* Begin XCBuildConfiguration section */
 		0A0CA2942B439B8000A9C3BA /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0A0CA2CE2B45855200A9C3BA /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -239,6 +242,7 @@
 		};
 		0A0CA2952B439B8000A9C3BA /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0A0CA2CE2B45855200A9C3BA /* Config.xcconfig */;
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -295,6 +299,7 @@
 		};
 		0A0CA2972B439B8000A9C3BA /* Debug */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0A0CA2CE2B45855200A9C3BA /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -325,6 +330,7 @@
 		};
 		0A0CA2982B439B8000A9C3BA /* Release */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = 0A0CA2CE2B45855200A9C3BA /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;

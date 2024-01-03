@@ -10,8 +10,8 @@ import SwiftUI
 struct LoginView: View {
     // Hold an error if one occurs so we can display it.
     @State var error: Error?
-    @State var username: String = "demo"
-    @State var password: String = "demopw"
+    @State var username: String = Bundle.main.object(forInfoDictionaryKey:"USER") as! String
+    @State var password: String = Bundle.main.object(forInfoDictionaryKey:"PASSWORD") as! String
     // Keep track of whether login is in progress.
     @State var isLoggingIn = false
 
