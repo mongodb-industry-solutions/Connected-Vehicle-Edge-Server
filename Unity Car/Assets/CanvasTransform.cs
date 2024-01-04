@@ -4,10 +4,10 @@ using UnityEngine;
 
 using UnityEngine;
 
-public class FaceCamera : MonoBehaviour
+public class CanvasTransform  : MonoBehaviour
 {
     public Camera targetCamera;
-    public float distanceFromCamera = 5.0f;
+    public float distanceFromCamera = 2.0f;
     public Vector2 offset; // Offset in X (left-right) and Y (up-down)
 
     void Update()

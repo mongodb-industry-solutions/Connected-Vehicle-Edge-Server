@@ -96,6 +96,8 @@ Congrats!! You have completed Step 2 of this demo. Go to step 3 to continue.
 
 ## Part 3 - Set Up Unity
 # Unity
+
+make sure unity version is 2022.3.13f1 or higher
 ```
 sealed class Constants
 {
@@ -113,6 +115,9 @@ sealed class Constants
 
 ## Part 4 - Set Up the iOS Swift Apps
 # iOS Swift Apps
+
+
+
 ```
 APP_ID = >>YOUR-APP-ID<<
 USER = >>YOUR-USER<<
