@@ -117,7 +117,7 @@ sealed class Constants
 # iOS Swift Apps
 
 
-
+Make sure you have version iOS 17.2 or higher
 ```
 APP_ID = >>YOUR-APP-ID<<
 USER = >>YOUR-USER<<
