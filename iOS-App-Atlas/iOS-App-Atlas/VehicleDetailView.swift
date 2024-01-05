@@ -8,45 +8,18 @@
 import SwiftUI
 import RealmSwift
 
-
 struct VehicleDetailView: View {
+    @EnvironmentObject var networkMonitor: NetworkMonitor
+    @State private var showNetworkAlert = false
+    
     @ObservedRealmObject var vehicle: vehicle_data
+    var realm: Realm
     @State private var showingCommandView = false
+    @State private var observer: NSKeyValueObservation?
     
     var body: some View {
         NavigationView {
             Form {
-                // Section(header: Text("Attributes")) {
-                //     HStack {
-                //         Text("VIN")
-                //         Spacer()
-                //         Text(vehicle._id)
-                //     }
-                //     // HStack {
-                //     //     Text("Miscellaneous")
-                //     //     Spacer()
-                //     //     switch vehicle.mixedTypes {
-                //     //     case .string(_):
-                //     //         Text(vehicle.mixedTypes.stringValue ?? "")
-                //     //     case .bool(_):
-                //     //         Text(String(vehicle.mixedTypes.boolValue!))
-                //     //     case .double(_):
-                //     //         Text(String(vehicle.mixedTypes.doubleValue!))
-                //     //     case .float(_):
-                //     //         Text(String(vehicle.mixedTypes.floatValue!))
-                //     //     case .int(_):
-                //     //         Text(String(vehicle.mixedTypes.intValue!))
-                //     //     case .date(_):
-                //     //         if #available(iOS 15.0, *) {
-                //     //             Text(vehicle.mixedTypes.dateValue?.ISO8601Format() ?? "")
-                //     //         } else {
-                //     //             // Fallback on earlier versions
-                //     //         }
-                //     //     default:
-                //     //         Text("\(vehicle.mixedTypes.stringValue ?? "other")")
-                //     //     }
-                //     // }
-                // }
                 Section(header: Text("CONTROLS")) {
                     Toggle(isOn: $vehicle.LightsOn) {
                         Text("Car On")
@@ -68,7 +41,7 @@ struct VehicleDetailView: View {
                         Text("Charge Limit")
                         Spacer()
                         Text(String(format: "%.0f %%", vehicle.Battery_Current ?? 1.0))
-//                        Text("\(vehicle.Powertrain?.Battery?.SOC?.Current ?? 0)")
+                        //                        Text("\(vehicle.Powertrain?.Battery?.SOC?.Current ?? 0)")
                     }
                     HStack {
                         Text("Status")
@@ -78,7 +51,7 @@ struct VehicleDetailView: View {
                             Image(systemName: "checkmark.circle.fill")
                                 .foregroundColor(.green)
                                 .imageScale(.large)
-
+                            
                         } else {
                             Image(systemName: "exclamationmark.triangle.fill")
                                 .foregroundColor(.red)
@@ -86,73 +59,26 @@ struct VehicleDetailView: View {
                         }
                     }
                 }
-                // // Section(header: Text("Commands: \(vehicle.commands.count)")) {
-                // //     List {
-                // //         ForEach(vehicle.commands) { cmd in
-                // //             HStack {
-                // //                 Text(cmd.command ?? "")
-                // //                 Spacer()
-                // //                 Text(cmd.status?.rawValue ?? "")
-                // //             }
-                // //         }
-                // //     }
-                // // }
-                // // Section(header: Text("Components: \(vehicle.components.count)")) {
-                // //     List {
-                // //         ForEach(vehicle.components, id: \._id) { component in
-                // //             HStack {
-                // //                 Text(component.name ?? "")
-                // //             }
-                // //         }
-                // //     }
-                // // }
+                
                 Button(action: {showingCommandView = true}){
                     Text("Send Command").frame(maxWidth: .infinity, alignment: .center)
                 }
             }
         }
         .navigationBarTitle("Connected to Atlas")
-        // .sheet(isPresented: $showingCommandView) {
-
-        //     CommandView(vehicle: vehicle, isPresented: $showingCommandView)
-        // }
+        .onChange(of: networkMonitor.isConnected) { connection in
+            showNetworkAlert = connection == false
+        }
+        .alert(
+            "Network connection seems to be offline.",
+            isPresented: $showNetworkAlert
+        ) {}
     }
 }
 
-// struct CommandView: View {
-//     @ObservedRealmObject var vehicle: vehicle
-//     @Binding var isPresented: Bool
-//     @State var key: String = ""
-//     @State var value: String = ""
-//     @State private var selectedCommand = "Reset Battery"
-//     let commands = ["Reset Battery"]
-    
-//     var body: some View {
-//         VStack() {
-//             List {
-//                 Picker("Commands", selection: $selectedCommand) {
-//                     ForEach(commands, id: \.self) {
-//                         Text($0)
-//                     }
-//                 }
-//             }
-//             HStack() {
-//                 Button("Send", action: sendCommand)
-
-//             }
-//         }
-//     }
-    
-//     func sendCommand(){
-//         $vehicle.commands.append(Command(value: ["command": selectedCommand, "status": CmdStatus.submitted]))
-//         isPresented = false
-
-//     }
-// }
-
-
 struct DeviceDetailView_Previews: PreviewProvider {
     static var previews: some View {
-        VehicleDetailView(vehicle: vehicle_data())
+        let realm = try! Realm()
+        VehicleDetailView(vehicle: vehicle_data(), realm: realm)
     }
 }

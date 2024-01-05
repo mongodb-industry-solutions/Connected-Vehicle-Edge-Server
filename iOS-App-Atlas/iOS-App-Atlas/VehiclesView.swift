@@ -33,7 +33,7 @@ struct VehiclesView: View {
             // The realm has been opened and is ready for use.
             // Show the content view.
         case .open(let realm):
-            VehiclesListView().environment(\.realm, realm)
+            VehiclesListView(realm: realm)
             // The realm is currently being downloaded from the server.
             // Show a progress view.
         case .progress(let progress):
@@ -56,6 +56,7 @@ struct ErrorView: View {
 
 
 struct VehiclesListView: View {
+    var realm: Realm
     @ObservedResults(vehicle_data.self) var vehicles
     var body: some View {
         NavigationView {
@@ -63,7 +64,7 @@ struct VehiclesListView: View {
                 // The list shows the items in the realm.
                 List {
                     ForEach(vehicles) { vehicle in
-                        NavigationLink(vehicle.Vehicle_Name ?? "My Car", destination: VehicleDetailView(vehicle: vehicle))
+                        NavigationLink(vehicle.Vehicle_Name ?? "My Car", destination: VehicleDetailView(vehicle: vehicle, realm: realm))
                         // + " " + vehicle.VehicleIdentification.Brand + " " + vehicle.VehicleIdentification.Model
                     }
                         .onDelete(perform: $vehicles.remove)

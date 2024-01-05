@@ -7,6 +7,7 @@
 
 import SwiftUI
 import RealmSwift
+import Network
 
 // SwiftUI App Lifecycle
 // MongoDB Sample Code: https://www.mongodb.com/docs/realm/sdk/swift/swiftui-tutorial/#complete-code
@@ -18,16 +19,33 @@ let app: RealmSwift.App? = App(id: Bundle.main.object(forInfoDictionaryKey:"APP_
 
 //let app2: RealmSwift.App? = RealmSwift.App(id: Bundle.main.object(forInfoDictionaryKey:"Atlas_App_ID") as! String);
 
+class NetworkMonitor: ObservableObject {
+    private let networkMonitor = NWPathMonitor()
+    private let workerQueue = DispatchQueue(label: "Monitor")
+    var isConnected = false
 
+    init() {
+        networkMonitor.pathUpdateHandler = { path in
+            self.isConnected = path.status == .satisfied
+            Task {
+                await MainActor.run {
+                    self.objectWillChange.send()
+                }
+            }
+        }
+        networkMonitor.start(queue: workerQueue)
+    }
+}
 
 @main
 struct EasyApp: SwiftUI.App {
     @Environment(\.scenePhase) private var scenePhase
+    @StateObject var networkMonitor = NetworkMonitor()
     
     var body: some Scene {
         WindowGroup {
             if let app = app {
-                ContentView(app: app)
+                ContentView(app: app).environmentObject(networkMonitor)
             } else {
             }
         }

@@ -8,6 +8,6 @@
 // Configuration settings file format documentation can be found at:
 // https://help.apple.com/xcode/#/dev745c5c974
 
-APP_ID = >>YOUR-APP-ID<<
-USER = >>YOUR-USER<<
-PASSWORD = >>YOUR-PASSWORD<<
+APP_ID = connected-vehicle-edge-server-cbvdz
+USER = demo
+PASSWORD = demopw
