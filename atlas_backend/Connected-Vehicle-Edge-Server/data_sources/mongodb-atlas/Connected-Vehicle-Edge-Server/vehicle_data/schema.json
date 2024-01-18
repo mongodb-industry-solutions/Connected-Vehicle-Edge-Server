@@ -1,0 +1,38 @@
+{
+    "title": "vehicle_data",
+    "properties": {
+        "Battery_Current": {
+            "bsonType": "double"
+        },
+        "Battery_Status_OK": {
+            "bsonType": "bool"
+        },
+        "Battery_Temp": {
+            "bsonType": "double"
+        },
+        "Driver_Door_Open": {
+            "bsonType": "bool"
+        },
+        "Driver_id": {
+            "bsonType": "string"
+        },
+        "Hood_Open": {
+            "bsonType": "bool"
+        },
+        "LightsOn": {
+            "bsonType": "bool"
+        },
+        "Vehicle_Name": {
+            "bsonType": "string"
+        },
+        "_id": {
+            "bsonType": "objectId"
+        }
+    },
+    "required": [
+        "Driver_Door_Open",
+        "Hood_Open",
+        "LightsOn",
+        "_id"
+    ]
+}

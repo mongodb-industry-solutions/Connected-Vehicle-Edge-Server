@@ -1,0 +1,17 @@
+{
+    "type": "flexible",
+    "state": "enabled",
+    "development_mode_enabled": false,
+    "service_name": "mongodb-atlas",
+    "database_name": "Connected-Vehicle-Edge-Server",
+    "client_max_offline_days": 30,
+    "is_recovery_mode_disabled": false,
+    "queryable_fields_names": [
+        "Driver_id"
+    ],
+    "collection_queryable_fields_names": {
+        "vehicle_data": [
+            "Driver_id"
+        ]
+    }
+}

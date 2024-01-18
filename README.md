@@ -20,31 +20,57 @@ In order to the make the demo work end-to-end, you will need to set up the backe
 
 ## Setup the MongoDB Atlas Backend
 
-1. Create a [MongoDB Cloud](https://cloud.mongodb.com/) user account and ensure that you have access to an organization/project. 
-2. Under the Data Services tab, click on Database in the sidedar, then "+ Create" and [create a free MongoDB cluster](https://www.mongodb.com/docs/atlas/tutorial/create-new-cluster/) in your preferred region and call it ```Connected-Vehicle-DB```. <br>You can choose a Free Tier (Shared), Serverless, or Dedicated cluster.
+1. Go to [MongoDB Cloud](https://cloud.mongodb.com/) and create user account.
+2. Under the Data Services tab, click "Database" in the sidedar, then "+ Create" and [create a new MongoDB cluster](https://www.mongodb.com/docs/atlas/tutorial/create-new-cluster/) in your preferred region and call it ```Connected-Vehicle-DB```. <br>You can choose a Free, Serverless, or Dedicated cluster.
+3. Go through the access configuration setup depending on your needs. Usually defaults are fine. 
 
 ## Setup App Services and create an App
 You can also follow the instructions on [this page](https://www.mongodb.com/docs/atlas/app-services/apps/create/#create-an-app-services-app) and create an app from the template 'Real-time Sync'. However, here are also the steps to follow:
-1. In the Atlas UI Project dashboard, click the **App Services** tab.
-2. Click **Create App from Template** and select ***Real-time Sync***.
-    - Link your Data Source. Select the option 'Use an existing MongoDB Atlas Data Source' and select the cluster you created previously.
-    - Give it a Name
-    - Select a Deployment Model (default options are usually fine to start)
-3.  Click **Create App Service**.
+1. [Install the App Services CLI](https://www.mongodb.com/docs/atlas/app-services/cli/#installation). This will allow you to manage your Applications through the terminal. 
+2. [Generate API key](https://www.mongodb.com/docs/atlas/app-services/cli/#generate-an-api-key), assign the `Project Owner` permission and add your IP address to the access list
+3. [Login with your API key](https://www.mongodb.com/docs/atlas/app-services/cli/#authenticate-with-an-api-key)
+
+4. In the terminal, navigate to `/atlas_backend` on this repositiory and import the Connected-Vehicle application with the command:
+
+    `appservices push --local ./Connected-Vehicle-Edge-Server --remote Connected-Vehicle-Edge-Server` 
+
+    You will be prompted to configure the app [options](https://www.mongodb.com/docs/atlas/app-services/cli/appservices-push/#appservices-push). Set them according your needs. If you are unsure which options to choose, the default ones are usually a good way to start! 
+
+    4.a If you are building this app on an existing cluter that isn't named `Connected-Vehicle-DB`, you should go to `atlas_backend/Connected-Vehicle-Edge-Server/data_sources/mongodb-atlas/config.json` and edit the `clusterName` field such as `"clusterName": "<your-cluster-name>",`
+
+    After you've chosen your options, you should see the following appear: 
+
+        App created successfully
     
-    | If any pop-ups appear, you can close them. You have all you need in the instructions of this repo. 
-4. Create a demo user by clicking on **App Users** in the sidedar, then **Add New User**. 
-    - As Email Address write: 'demo'
-    - As Password write: 'demopw'
+        ...
     
-    | These values are the ones used in this repository and will enable you to use this demo quicker. But feel free to use any email/password combination! Just be aware you would need to edit some in this repo to adjust to the changes.
+        Successfully pushed app up: Your App ID 
+    
+    Your App ID should be in the following format: YourAppName-XXXXX
 
-<br><br>
+5. Create the demo user by pasting the following into your command shell: `appservices users create --type email --email demo --password demopw`. Be sure to change the default password. You then have to provide the previously received App ID or just type the application name `Connected-Vehicle-Edge-Server`.
+
+    You should see the following appear: 
+        
+        App ID or Name (here you'll insert your App ID) 
+        Successfully created user
+        {
+            "id": , 
+            "enabled": , 
+            "email": ,
+            "type":
+        }
+6. Run the following command: `appservices apps list` to check if your app has been created. 
+    
+    You should see the following appear: 
+        
+        Found 1 apps
+        Client App ID                        Project ID                _id                     
+        -----------------------------------  ------------------------  ------------------------
+        your-app-id                          your-project-id           app-_id
 
 
-
-Congrats! The first part is done. Now you'll continue with configuring / running the vehicle simulator ["Part 2: Set up the Typescript Vehicle Simulator"]().
-
+7. Congrats! The first part is done. Now you'll continue with configuring / running the vehicle simulator
 
 
 ## Part 2 - Edge Server
