@@ -8,6 +8,6 @@
 // Configuration settings file format documentation can be found at:
 // https://help.apple.com/xcode/#/dev745c5c974
 
-APP_ID = connected-vehicle-edge-server-cbvdz
+APP_ID = <-- Your Atlas App ID -->
 USER = demo
 PASSWORD = demopw

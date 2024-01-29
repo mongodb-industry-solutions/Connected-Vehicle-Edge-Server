@@ -8,9 +8,11 @@ Thanks to being able to realiably ship new updates to software on the vehicles, 
 However, creating a state-of-the-art connected vehicle platform requires a high quality foundation.
 In this demonstration, we will showcase a connected vehicle utilizing MongoDB Edge Server, the Atlas Device SDKs (previously known as Realm), and Device Sync. 
 
+![Alt Text](media/demo-recording.gif)
+
 MongoDB and its Device SDKs serve as a comprehensive data layer, facilitating effective two-way data transfer and maintaining consistency across ECUs, DCUs, HCPs, mobile devices, and cloud systems. Allowing you to focus on value-generating work such as enhancing the dirving experience, gaining value out of the data or produce the right recommendations.
 
-[ARCHITECTURE IMAGE HERE]
+![Alt Text](media/high-level-arch.png)
 
 # Set up instructions
 ## Part 1 - MongoDB Atlas Backend
@@ -76,7 +78,7 @@ You can also follow the instructions on [this page](https://www.mongodb.com/docs
 ## Part 2 - Edge Server
 # Edge Server
 
-Edge Server is a "local" server that sits between your client devices and MongoDB Atlas App Services. 
+Edge Server is a local server that sits between your client devices and MongoDB Atlas App Services. 
 
 ## Get Access to Edge Server Private Preview
 
@@ -122,31 +124,53 @@ Congrats!! You have completed Step 2 of this demo. Go to step 3 to continue.
 
 ## Part 3 - Set Up Unity
 # Unity
-
-make sure unity version is 2022.3.13f1 or higher
-```
-sealed class Constants
-{
-    public sealed class Realm
+1. Open your terminal or comand line interface and for to the Assest folder: `cd Unity Car/Assets`
+2. Create a Unity Constants file named `Constants.cs` to store the constants used by the project. This includes, the App Services ID, as well as its usernae and password, and the baseURL for Edge Server. You can do this by running the following command:
+    ```
+    echo 'sealed class Constants
     {
-        public const string AppId = ">>YOUR-REALM-APP-ID<<";
-        public const string baseURL = "http://localhost:80";
-        public const string UserName = ">>YOUR-REALM-USER-NAME<<";
-        public const string Password = ">>YOUR-REALM-PASSWORD<<";
-        public static bool flag = false;
-    }
-}
-```
+        public sealed class Realm
+        {
+            public const string AppId = ">>YOUR-APP-ID<<";
+            public const string baseURL = "http://localhost:80";
+            public const string UserName = "demo";
+            public const string Password = "demopw";
+            public static bool flag = false;
+        }
+    }' > Constants.cs
+    ```
+    Make sure to edit the command to include your App ID. Also, you can set a different UserName and Password here if your App has different values. 
+    > [!TIP]
+    > Without this file, the Unity project will open in Safe mode. Make sure to do this step before opening the Unity project.
 
+3. [Download Unity](https://unity.com/releases/editor/whats-new/2022.3.13), and make sure is version is 2022.3.13 or higher.
+4. Open Unity and then open `Unity Car/` as a project.
+
+Congrats!! You have completed Step 3 of this demo. Go to step 4 to continue. 
 
 ## Part 4 - Set Up the iOS Swift Apps
 # iOS Swift Apps
 
+This project runs two iOS applications. One application will be connected directly to Edge Server and the other on will be connected to Atlas. These app are in the folders: `iOS-App-Edge-Server` and `iOS-App-Atlas`.
 
-Make sure you have version iOS 17.2 or higher
-```
-APP_ID = >>YOUR-APP-ID<<
-USER = >>YOUR-USER<<
-PASSWORD = >>YOUR-PASSWORD<<
-```
+#### iOS app connected to Edge Server
+
+1. Open the project with Xcode by clicking the file: `iOS-App-Edge-Server/iOS-App-Edge-Server.xcodeproj`.
+2. Open the config file  ```/iOS-App-Edge-Server/Config.xcconfig```
+3. Update ```Atlas_App_ID = <-- Your Atlas App ID -->```
+4. Run the the app. Sometimes it may be required to reset the package caches in Xcode -> ```'File -> Packages -> Reset Package Caches'```
+5. If you have changed the password for the user created in [part 1](https://github.com/mongodb-industry-solutions/) update the password on the login screen!
+
+
+Follow the exact same steps for the app connected to Atlas.
+#### iOS app connected to Atlas
+
+1. Open the project with Xcode by clicking the file: `iOS-App-Atlas/iOS-App-Atlas.xcodeproj`.
+2. Open the config file  ```/iOS-App-Atlas/Config.xcconfig```
+3. Update ```Atlas_App_ID = <-- Your Atlas App ID -->```
+4. Run the the app. Sometimes it may be required to reset the package caches in Xcode -> ```'File -> Packages -> Reset Package Caches'```
+5. If you have changed the password for the user created in [part 1](https://github.com/mongodb-industry-solutions/) update the password on the login screen!
+
+
+
 
