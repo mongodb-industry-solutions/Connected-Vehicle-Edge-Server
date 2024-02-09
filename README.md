@@ -3,27 +3,33 @@ The automotive and transportation industries are going through a significant tra
 
 This transformation is the shift to software-focused vehicles. This is known as **Software Defined Vehicles**. 
 
-Thanks to being able to realiably ship new updates to software on the vehicles, this transformation will enable innovative customer experiences, increase security, make more efficient transportation and open new business models. 
+Thanks to being able to reliably ship new updates to software on the vehicles, this transformation will enable innovative customer experiences, increase security, make more efficient transportation and open new business models. 
 
 However, creating a state-of-the-art connected vehicle platform requires a high quality foundation.
 In this demonstration, we will showcase a connected vehicle utilizing MongoDB Edge Server, the Atlas Device SDKs (previously known as Realm), and Device Sync. 
 
-![Alt Text](media/demo-recording.gif)
+MongoDB and its Device SDKs serve as a comprehensive data layer, facilitating effective two-way data transfer and maintaining consistency across ECUs, DCUs, HCPs, mobile devices, and cloud systems. Allowing you to focus on value-generating work such as enhancing the driving experience, gaining value out of the data or produce the right recommendations.
 
-MongoDB and its Device SDKs serve as a comprehensive data layer, facilitating effective two-way data transfer and maintaining consistency across ECUs, DCUs, HCPs, mobile devices, and cloud systems. Allowing you to focus on value-generating work such as enhancing the dirving experience, gaining value out of the data or produce the right recommendations.
+
+In this Repository we will walk you through how to set up this connected vehicle demo following the architecture below:
 
 ![Alt Text](media/high-level-arch.png)
 
+
+
+
+
 # Set up instructions
-## Part 1 - MongoDB Atlas Backend
-# MongoDB Atlas Backend
+<br>
+
+# Part 1 - MongoDB Atlas Backend
 
 In order to the make the demo work end-to-end, you will need to set up the backend. Let's get started! 
 
 ## Setup the MongoDB Atlas Backend
 
 1. Go to [MongoDB Cloud](https://cloud.mongodb.com/) and create user account.
-2. Under the Data Services tab, click "Database" in the sidedar, then "+ Create" and [create a new MongoDB cluster](https://www.mongodb.com/docs/atlas/tutorial/create-new-cluster/) in your preferred region and call it ```Connected-Vehicle-DB```. <br>You can choose a Free, Serverless, or Dedicated cluster.
+2. Under the Data Services tab, click "Database" in the sidebar, then "+ Create" and [create a new MongoDB cluster](https://www.mongodb.com/docs/atlas/tutorial/create-new-cluster/) in your preferred region and call it ```Connected-Vehicle-DB```. <br>You can choose a Free, Serverless, or Dedicated cluster.
 3. Go through the access configuration setup depending on your needs. Usually defaults are fine. 
 
 ## Setup App Services and create an App
@@ -32,13 +38,13 @@ You can also follow the instructions on [this page](https://www.mongodb.com/docs
 2. [Generate API key](https://www.mongodb.com/docs/atlas/app-services/cli/#generate-an-api-key), assign the `Project Owner` permission and add your IP address to the access list
 3. [Login with your API key](https://www.mongodb.com/docs/atlas/app-services/cli/#authenticate-with-an-api-key)
 
-4. In the terminal, navigate to `/atlas_backend` on this repositiory and import the Connected-Vehicle application with the command:
+4. In the terminal, navigate to `/atlas_backend` on this repository and import the Connected-Vehicle application with the command:
 
     `appservices push --local ./Connected-Vehicle-Edge-Server --remote Connected-Vehicle-Edge-Server` 
 
     You will be prompted to configure the app [options](https://www.mongodb.com/docs/atlas/app-services/cli/appservices-push/#appservices-push). Set them according your needs. If you are unsure which options to choose, the default ones are usually a good way to start! 
 
-    4.a If you are building this app on an existing cluter that isn't named `Connected-Vehicle-DB`, you should go to `atlas_backend/Connected-Vehicle-Edge-Server/data_sources/mongodb-atlas/config.json` and edit the `clusterName` field such as `"clusterName": "<your-cluster-name>",`
+    4.a If you are building this app on an existing cluster that isn't named `Connected-Vehicle-DB`, you should go to `atlas_backend/Connected-Vehicle-Edge-Server/data_sources/mongodb-atlas/config.json` and edit the `clusterName` field such as `"clusterName": "<your-cluster-name>",`
 
     After you've chosen your options, you should see the following appear: 
 
@@ -72,11 +78,10 @@ You can also follow the instructions on [this page](https://www.mongodb.com/docs
         your-app-id                          your-project-id           app-_id
 
 
-7. Congrats! The first part is done. Now you'll continue with configuring / running the vehicle simulator
+7. Congrats! The first part is done. Now you'll continue with configuring Edge Server
 
 
-## Part 2 - Edge Server
-# Edge Server
+# Part 2 - Edge Server
 
 Edge Server is a local server that sits between your client devices and MongoDB Atlas App Services. 
 
@@ -122,10 +127,18 @@ If you are a MongoDB customer, contact your Product or Account Representative to
 Congrats!! You have completed Step 2 of this demo. Go to step 3 to continue. 
 
 
-## Part 3 - Set Up Unity
-# Unity
-1. Open your terminal or comand line interface and for to the Assest folder: `cd Unity Car/Assets`
-2. Create a Unity Constants file named `Constants.cs` to store the constants used by the project. This includes, the App Services ID, as well as its usernae and password, and the baseURL for Edge Server. You can do this by running the following command:
+# Part 3 - Set Up Unity
+
+### Prerequisites
+
+[Download Unity](https://unity.com/releases/editor/whats-new/2022.3.13), and make sure is version is 2022.3.13 or higher.
+
+### Setup
+
+> [!TIP]
+> Make sure to do this step before opening the Unity project to avoid the Unity project opening in Safe mode. 
+1. Open your terminal or command line interface and for to the Assets folder: `cd Unity Car/Assets`
+2. Create a Unity Constants file named `Constants.cs` to store the constants used by the project. This includes, the App Services ID, as well as its username and password, and the baseURL for Edge Server. You can do this by running the following command:
     ```
     echo 'sealed class Constants
     {
@@ -140,20 +153,19 @@ Congrats!! You have completed Step 2 of this demo. Go to step 3 to continue.
     }' > Constants.cs
     ```
     Make sure to edit the command to include your App ID. Also, you can set a different UserName and Password here if your App has different values. 
-    > [!TIP]
-    > Without this file, the Unity project will open in Safe mode. Make sure to do this step before opening the Unity project.
 
-3. [Download Unity](https://unity.com/releases/editor/whats-new/2022.3.13), and make sure is version is 2022.3.13 or higher.
-4. Open Unity and then open `Unity Car/` as a project.
+4. Open Unity Hub and then Add `Unity Car/` as a project.
+
+![Alt Text](media/Unity-screenshot.png)
 
 Congrats!! You have completed Step 3 of this demo. Go to step 4 to continue. 
 
-## Part 4 - Set Up the iOS Swift Apps
-# iOS Swift Apps
+# Part 4 - Set Up the iOS Swift Apps
 
 This project runs two iOS applications. One application will be connected directly to Edge Server and the other on will be connected to Atlas. These app are in the folders: `iOS-App-Edge-Server` and `iOS-App-Atlas`.
+![Alt Text](media/Apps-screenshot.png)
 
-#### iOS app connected to Edge Server
+### iOS app connected to Edge Server
 
 1. Open the project with Xcode by clicking the file: `iOS-App-Edge-Server/iOS-App-Edge-Server.xcodeproj`.
 2. Open the config file  ```/iOS-App-Edge-Server/Config.xcconfig```
@@ -163,7 +175,7 @@ This project runs two iOS applications. One application will be connected direct
 
 
 Follow the exact same steps for the app connected to Atlas.
-#### iOS app connected to Atlas
+### iOS app connected to Atlas
 
 1. Open the project with Xcode by clicking the file: `iOS-App-Atlas/iOS-App-Atlas.xcodeproj`.
 2. Open the config file  ```/iOS-App-Atlas/Config.xcconfig```
@@ -171,6 +183,23 @@ Follow the exact same steps for the app connected to Atlas.
 4. Run the the app. Sometimes it may be required to reset the package caches in Xcode -> ```'File -> Packages -> Reset Package Caches'```
 5. If you have changed the password for the user created in [part 1](https://github.com/mongodb-industry-solutions/) update the password on the login screen!
 
+
+
+
+And that's all the setup required! 
+# Run the demo
+
+Make sure your cluster on the Cloud is up and running. 
+1. In the terminal change directory to `/edge_server`, and run `make up`. This will start Edge Server in a few seconds. 
+2. Open the Unity project, and click on the play button which is located on the top center of the UI. This will start the unity game.
+![Alt Text](media/unity-play-button.png)
+
+3. Open the two Xcode projects: `iOS-App-Atlas/iOS-App-Atlas.xcodeproj` and `iOS-App-Edge-Server/iOS-App-Edge-Server.xcodeproj`.
+4. Run the the apps. Sometimes it may be required to reset the package caches in Xcode -> ```'File -> Packages -> Reset Package Caches'```
+
+
+Now you have everything up and running! 
+![Alt Text](media/demo-recording.gif)
 
 
 
