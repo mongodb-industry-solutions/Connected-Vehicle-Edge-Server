@@ -98,8 +98,8 @@ Using Mongosh:		<current mongosh version>
 10. Switch to the appropriate database. It should be `Connected-Vehicle-DB`
     Run `use Connected-Vehicle-DB`
 11. Insert the document by running the comand below:
-    ```
-    db.vehicle_data.insertOne({
+```
+db.vehicle_data.insertOne({
   "LightsOn": false,
   "Battery_Temp": 26.0,
   "Battery_Current": 72.0,
