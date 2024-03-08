@@ -19,13 +19,5 @@
             "resetPasswordUrl": "https://sample.com",
             "runConfirmationFunction": false
         }
-    },
-    "tiered-sync-token": {
-        "name": "tiered-sync-token",
-        "type": "tiered-sync-token",
-        "disabled": false,
-        "config": {
-            "token": "6583f328d33e30c6be24cb37"
-        }
     }
 }
