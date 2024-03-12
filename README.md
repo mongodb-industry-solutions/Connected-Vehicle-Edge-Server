@@ -70,9 +70,9 @@ You can also follow the instructions on [this page](https://www.mongodb.com/docs
         }
 
 > [!IMPORTANT]
-> Copy/Save the ID of the user that appears in the terminal, we will use it in the following step.
+> Copy/Save the User ID that appears in the terminal, we will use it in the following step.
 
-7. Run the following command: `appservices apps list` to check if your app has been created. 
+6. Run the following command: `appservices apps list` to check if your app has been created. 
     
     You should see the following appear: 
         
@@ -83,10 +83,15 @@ You can also follow the instructions on [this page](https://www.mongodb.com/docs
 
 
 Now we are going to insert in MongoDB the document we are going to use for this demo!
+
 7. Go to [MongoDB Cloud](https://cloud.mongodb.com/) and click Connect on the cluster you created for this project.
+   
 8. Select Shell in the "Access your data through tools" Section.
+
 9. Install MongoDB Shell if necessary and follow the instructions to connect to MongoDB through the Terminal. To install you should run:
-`brew install mongosh`
+
+    `brew install mongosh`
+
 Then run `mongo "<your_connection_string>"` to access the JS-based Shell environment. 
 If you connected correctly, you should see:
 ```
@@ -111,7 +116,7 @@ db.vehicle_data.insertOne({
 })
 ```
 > [!IMPORTANT]
-> Change the Driver_id value, and substitute it with the user ID we copied from the previous step. 
+> Change the Driver_id value, and substitute it with the user ID we copied in Step 5
 
 
 12. Congrats! The first part is done. Now you'll continue with configuring Edge Server
