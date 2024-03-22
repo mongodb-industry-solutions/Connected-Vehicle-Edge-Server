@@ -11,7 +11,7 @@ In this demonstration, we will showcase a connected vehicle utilizing MongoDB Ed
 MongoDB and its Device SDKs serve as a comprehensive data layer, facilitating effective two-way data transfer and maintaining consistency across ECUs, DCUs, HCPs, mobile devices, and cloud systems. Allowing you to focus on value-generating work such as enhancing the driving experience, gaining value out of the data or produce the right recommendations.
 
 
-In this Repository we will walk you through how to set up this connected vehicle demo following the architecture below:
+In this Repository, we will walk you through how to set up this connected vehicle demo following the architecture below:
 
 ![Alt Text](media/high-level-arch.png)
 
@@ -68,6 +68,10 @@ You can also follow the instructions on [this page](https://www.mongodb.com/docs
             "email": ,
             "type":
         }
+
+> [!IMPORTANT]
+> Copy/Save the User ID that appears in the terminal, we will use it in the following step.
+
 6. Run the following command: `appservices apps list` to check if your app has been created. 
     
     You should see the following appear: 
@@ -78,7 +82,44 @@ You can also follow the instructions on [this page](https://www.mongodb.com/docs
         your-app-id                          your-project-id           app-_id
 
 
-7. Congrats! The first part is done. Now you'll continue with configuring Edge Server
+Now we are going to insert in MongoDB the document we are going to use for this demo!
+
+7. Go to [MongoDB Cloud](https://cloud.mongodb.com/) and click Connect on the cluster you created for this project.
+   
+8. Select Shell in the "Access your data through tools" Section.
+
+9. Install MongoDB Shell if necessary and follow the instructions to connect to MongoDB through the Terminal. To install you should run:
+
+    `brew install mongosh`
+
+Then run `mongo "<your_connection_string>"` to access the JS-based Shell environment. 
+If you connected correctly, you should see:
+```
+Current Mongosh Log ID:	<current log ID>
+Connecting to:		<your_connection_string>
+Using MongoDB:		<API Version 1>
+Using Mongosh:		<current mongosh version>
+```
+10. Switch to the appropriate database. It should be `Connected-Vehicle-DB`
+    Run `use Connected-Vehicle-DB`
+11. Insert the document by running the comand below:
+```
+db.vehicle_data.insertOne({
+  "LightsOn": false,
+  "Battery_Temp": 26.0,
+  "Battery_Current": 72.0,
+  "Battery_Status_OK": true,
+  "Vehicle_Name": "My Car",
+  "Driver_id": "<your_user_ID>",
+  "Driver_Door_Open": false,
+  "Hood_Open": false
+})
+```
+> [!IMPORTANT]
+> Change the Driver_id value, and substitute it with the user ID we copied in Step 5
+
+
+12. Congrats! The first part is done. Now you'll continue with configuring Edge Server
 
 
 # Part 2 - Edge Server
