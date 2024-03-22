@@ -32,4 +32,8 @@ public partial class vehicle_data : IRealmObject
 
     [MapTo("Driver_Door_Open")]
     public bool DriverDoorOpen { get; set; }
+
+    [MapTo("Engine_Status")]
+    public string? EngineStatus { get; set; }
+
 }

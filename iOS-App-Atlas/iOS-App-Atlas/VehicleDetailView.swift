@@ -31,7 +31,14 @@ struct VehicleDetailView: View {
                         Text("Open Hood")
                     }
                 }
-                Section(header: Text("Battery")) {
+                Section(header: Text("Engine & Battery")) {
+                    
+                    HStack {
+                        Text("Engine Status")
+                        Spacer()
+                        Text(vehicle.Engine_Status ?? "Engine Off")
+                        //                        Text("\(vehicle.Powertrain?.Battery?.SOC?.Current ?? 0)")
+                    }
                     HStack {
                         Text("Temperature")
                         Spacer()
@@ -44,7 +51,7 @@ struct VehicleDetailView: View {
                         //                        Text("\(vehicle.Powertrain?.Battery?.SOC?.Current ?? 0)")
                     }
                     HStack {
-                        Text("Status")
+                        Text("Battery Status")
                         Spacer()
                         // This is not the most accurate in terms of real application MIL isn't related to battery status. But just for demo pursposes.
                         if (vehicle.Battery_Status_OK == true) {
@@ -59,6 +66,8 @@ struct VehicleDetailView: View {
                         }
                     }
                 }
+                
+            
                 
                 Button(action: {showingCommandView = true}){
                     Text("Send Command").frame(maxWidth: .infinity, alignment: .center)

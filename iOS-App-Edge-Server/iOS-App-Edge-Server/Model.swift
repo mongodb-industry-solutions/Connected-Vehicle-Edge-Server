@@ -26,4 +26,6 @@ class vehicle_data: Object, ObjectKeyIdentifiable {
     @Persisted var Hood_Open: Bool = false
 
     @Persisted var Vehicle_Name: String?
+
+    @Persisted var Engine_Status: String?
 }

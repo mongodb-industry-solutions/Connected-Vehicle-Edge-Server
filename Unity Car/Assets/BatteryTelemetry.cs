@@ -67,7 +67,7 @@ public class BatteryTelemetry : MonoBehaviour
             {
                 realm.Write(() =>
                 {
-                    vehicleData.BatteryCurrent = Math.Max(vehicleData.BatteryCurrent.Value - UnityEngine.Random.Range(0, 15), 0);
+                    // vehicleData.BatteryCurrent = Math.Max(vehicleData.BatteryCurrent.Value - UnityEngine.Random.Range(0, 15), 0);
                     vehicleData.BatteryTemp = vehicleData.BatteryTemp.Value + UnityEngine.Random.Range(-2, 3);
                     if (vehicleData.BatteryCurrent == 0)
                     {
