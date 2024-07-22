@@ -31,10 +31,7 @@ public class RealmManager : MonoBehaviour
 
     private async void InitializeRealm()
     {
-        var realmApp = App.Create(new AppConfiguration(Constants.Realm.AppId)
-        {
-            BaseUri = new Uri(Constants.Realm.baseURL),
-        });
+        var realmApp = App.Create(new AppConfiguration(Constants.Realm.AppId){});
         var syncUser = await realmApp.LogInAsync(Credentials.EmailPassword(Constants.Realm.UserName, Constants.Realm.Password));
         var config = new FlexibleSyncConfiguration(syncUser)
         {
