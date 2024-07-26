@@ -112,7 +112,8 @@ db.vehicle_data.insertOne({
   "Vehicle_Name": "My Car",
   "Driver_id": "<your_user_ID>",
   "Driver_Door_Open": false,
-  "Hood_Open": false
+  "Hood_Open": false,
+  "Engine_Status": "Engine Off"
 })
 ```
 > [!IMPORTANT]

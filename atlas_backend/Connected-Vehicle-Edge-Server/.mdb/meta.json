@@ -1,6 +1,7 @@
 {
     "config_version": 20230101,
-    "app_id": "65a2e28433ef9286c0e32770",
-    "group_id": "646dd5e1c59c9c4951df7e78",
-    "client_app_id": "connected-vehicle-edge-server-qakyd"
+    "app_id": "6581b9f432d5b2616bec878c",
+    "group_id": "60cf33a18b5e987f652e758e",
+    "client_app_id": "connected-vehicle-edge-server-cbvdz",
+    "last_pulled": 1722006557
 }

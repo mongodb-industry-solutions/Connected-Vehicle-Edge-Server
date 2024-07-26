@@ -1,1 +1,15 @@
-[]
+[
+    {
+        "name": "acoustic_engine_status_eupdate",
+        "private": true
+    },
+    {
+        "name": "bedrock_acoustic_report",
+        "private": false
+    },
+    {
+        "name": "test_function_http_localhost",
+        "private": false,
+        "disable_arg_logs": true
+    }
+]
