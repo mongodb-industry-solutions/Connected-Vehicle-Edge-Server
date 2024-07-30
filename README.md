@@ -1,4 +1,4 @@
-# Connected Vehicle with Edge Server
+# Connected Vehicle with MongoDB Atlas
 The automotive and transportation industries are going through a significant transformation.
 
 This transformation is the shift to software-focused vehicles. This is known as **Software Defined Vehicles**. 
@@ -119,7 +119,7 @@ db.vehicle_data.insertOne({
 > Change the Driver_id value, and substitute it with the user ID we copied in Step 5
 
 
-12. Congrats! The first part is done. Now you'll continue with configuring Edge Server
+12. Congrats! The first part is done. Now you'll continue with configuring Unity
 
 # Part 2 - Set Up Unity
 
@@ -132,7 +132,7 @@ db.vehicle_data.insertOne({
 > [!TIP]
 > Make sure to do this step before opening the Unity project to avoid the Unity project opening in Safe mode. 
 1. Open your terminal or command line interface and for to the Assets folder: `cd Unity Car/Assets`
-2. Create a Unity Constants file named `Constants.cs` to store the constants used by the project. This includes, the App Services ID, as well as its username and password, and the baseURL for Edge Server. You can do this by running the following command:
+2. Create a Unity Constants file named `Constants.cs` to store the constants used by the project. This includes, the App Services ID, as well as its username and password. You can do this by running the following command:
     ```
     echo 'sealed class Constants
     {
@@ -147,18 +147,17 @@ db.vehicle_data.insertOne({
     ```
     Make sure to edit the command to include your App ID. Also, you can set a different UserName and Password here if your App has different values. 
 
-4. Open Unity Hub and then Add `Unity Car/` as a project.
+4. Open Unity Hub and then Add `Unity Car/` as a project. Once it opens double click on the "Light example.unity" file. It can be found inside the "Project"s tab at the bottom, open the "Assets" folder, then open the "Sport Car - 3D model" folder and there you will see the "Light example.unity" file with the Unity Icon at on it.
 
 ![Alt Text](media/Unity-screenshot.png)
 
-Congrats!! You have completed Step 3 of this demo. Go to step 4 to continue. 
+Congrats!! You have completed Step 2 of this demo. Go to step 3 to continue. 
 
 # Part 3 - Set Up the iOS Swift Apps
 
-This project runs two iOS applications. One application will be connected directly to Edge Server and the other on will be connected to Atlas. These app are in the folders: `iOS-App-Atlas`.
+This project runs an iOS application which lives in the folder: `iOS-App-Atlas`. This application will be connected directly to Atlas.
 ![Alt Text](media/Apps-screenshot.png)
 
-Follow the exact same steps for the app connected to Atlas.
 ### iOS app connected to Atlas
 
 1. Open the project with Xcode by clicking the file: `iOS-App-Atlas/iOS-App-Atlas.xcodeproj`.
@@ -176,8 +175,8 @@ And that's all the setup required!
 Make sure your cluster on the Cloud is up and running. 
 1. Open the Unity project, and click on the play button which is located on the top center of the UI. This will start the unity game.
 ![Alt Text](media/unity-play-button.png)
-2. Open the two Xcode projects: `iOS-App-Atlas/iOS-App-Atlas.xcodeproj`.
-3. Run the the apps. Sometimes it may be required to reset the package caches in Xcode -> ```'File -> Packages -> Reset Package Caches'```
+2. Open the Xcode project: `iOS-App-Atlas/iOS-App-Atlas.xcodeproj`.
+3. Run the the app. Sometimes it may be required to reset the package caches in Xcode -> ```'File -> Packages -> Reset Package Caches'```
 
 
 Now you have everything up and running! 
