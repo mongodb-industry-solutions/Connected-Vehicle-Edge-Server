@@ -121,54 +121,7 @@ db.vehicle_data.insertOne({
 
 12. Congrats! The first part is done. Now you'll continue with configuring Edge Server
 
-
-# Part 2 - Edge Server
-
-Edge Server is a local server that sits between your client devices and MongoDB Atlas App Services. 
-
-## Get Access to Edge Server Private Preview
-
-At the time of writing this documentation, Edge Server is in Private Preview. 
-
-You can do this step and follow the rest of the instructions in the meantime. 
-
-If you are a MongoDB customer, contact your Product or Account Representative to enable this step. 
-1. Go to the [Atlas Edge Server](https://www.mongodb.com/products/platform/atlas-edge-server) page and Request Access to the Private Preview by filling the form. 
-
-2. When contacted, you will have to give your [App Services App ID](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#std-label-find-app-id) to enable Edge Server and generate an authorization secret for your App.
-
-
-## Install Edge Server
-
-1. [Get Edge Server Code](https://www.mongodb.com/docs/atlas/app-services/edge-server/configure/#get-the-edge-server-code)
-2. Once Edge Server folder is unzipped, open and edit the `config.json` file as follows:
-    ```json
-    {
-    "clientAppId": "YOUR-APP-ID",
-    "query": "*",
-    "cloudSyncServerAuthSecret": "YOUR-AUTH-SECRET",
-    "hostname": "localhost:80",
-    "tls" : {
-        "enabled": false,
-        "certificates": [
-        {
-            "publicKeyPath": "certs/cert.pem",
-            "privateKeyPath": "certs/certkey.pem"
-        }
-        ]
-    }
-    }
-    ```
-    - In `"clientAppId": "YOUR-APP-ID"` set your your [App Services App ID](https://www.mongodb.com/docs/atlas/app-services/apps/metadata/#std-label-find-app-id)
-    - In `"cloudSyncServerAuthSecret": "YOUR-AUTH-SECRET"` set the auth token that you should have received in the previous step. If you don't have it yet, continue the tutorial and come back to edit this file later. This is the only place where you would need the secret.
-    - In `"hostname": "localhost:80",`. We have set up local host 80. Feel free to pick any other host name.
-3. [Install Edge Server Dependencies](https://www.mongodb.com/docs/atlas/app-services/edge-server/configure/#install-dependencies)
-
-
-Congrats!! You have completed Step 2 of this demo. Go to step 3 to continue. 
-
-
-# Part 3 - Set Up Unity
+# Part 2 - Set Up Unity
 
 ### Prerequisites
 
@@ -186,7 +139,6 @@ Congrats!! You have completed Step 2 of this demo. Go to step 3 to continue.
         public sealed class Realm
         {
             public const string AppId = ">>YOUR-APP-ID<<";
-            public const string baseURL = "http://localhost:80";
             public const string UserName = "demo";
             public const string Password = "demopw";
             public static bool flag = false;
@@ -201,19 +153,10 @@ Congrats!! You have completed Step 2 of this demo. Go to step 3 to continue.
 
 Congrats!! You have completed Step 3 of this demo. Go to step 4 to continue. 
 
-# Part 4 - Set Up the iOS Swift Apps
+# Part 3 - Set Up the iOS Swift Apps
 
-This project runs two iOS applications. One application will be connected directly to Edge Server and the other on will be connected to Atlas. These app are in the folders: `iOS-App-Edge-Server` and `iOS-App-Atlas`.
+This project runs two iOS applications. One application will be connected directly to Edge Server and the other on will be connected to Atlas. These app are in the folders: `iOS-App-Atlas`.
 ![Alt Text](media/Apps-screenshot.png)
-
-### iOS app connected to Edge Server
-
-1. Open the project with Xcode by clicking the file: `iOS-App-Edge-Server/iOS-App-Edge-Server.xcodeproj`.
-2. Open the config file  ```/iOS-App-Edge-Server/Config.xcconfig```
-3. Update ```Atlas_App_ID = <-- Your Atlas App ID -->```
-4. Run the the app. Sometimes it may be required to reset the package caches in Xcode -> ```'File -> Packages -> Reset Package Caches'```
-5. If you have changed the password for the user created in [part 1](https://github.com/mongodb-industry-solutions/) update the password on the login screen!
-
 
 Follow the exact same steps for the app connected to Atlas.
 ### iOS app connected to Atlas
@@ -231,16 +174,11 @@ And that's all the setup required!
 # Run the demo
 
 Make sure your cluster on the Cloud is up and running. 
-1. In the terminal change directory to `/edge_server`, and run `make up`. This will start Edge Server in a few seconds. 
-2. Open the Unity project, and click on the play button which is located on the top center of the UI. This will start the unity game.
+1. Open the Unity project, and click on the play button which is located on the top center of the UI. This will start the unity game.
 ![Alt Text](media/unity-play-button.png)
-
-3. Open the two Xcode projects: `iOS-App-Atlas/iOS-App-Atlas.xcodeproj` and `iOS-App-Edge-Server/iOS-App-Edge-Server.xcodeproj`.
-4. Run the the apps. Sometimes it may be required to reset the package caches in Xcode -> ```'File -> Packages -> Reset Package Caches'```
+2. Open the two Xcode projects: `iOS-App-Atlas/iOS-App-Atlas.xcodeproj`.
+3. Run the the apps. Sometimes it may be required to reset the package caches in Xcode -> ```'File -> Packages -> Reset Package Caches'```
 
 
 Now you have everything up and running! 
 ![Alt Text](media/demo-recording.gif)
-
-
-
