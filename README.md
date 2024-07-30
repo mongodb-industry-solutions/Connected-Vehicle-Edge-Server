@@ -156,6 +156,8 @@ Congrats!! You have completed Step 2 of this demo. Go to step 3 to continue.
 # Part 3 - Set Up the iOS Swift Apps
 
 This project runs an iOS application which lives in the folder: `iOS-App-Atlas`. This application will be connected directly to Atlas.
+
+
 ![Alt Text](media/Apps-screenshot.png)
 
 ### iOS app connected to Atlas
