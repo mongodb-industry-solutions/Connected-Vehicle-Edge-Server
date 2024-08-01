@@ -16,7 +16,8 @@ struct VehicleDetailView: View {
     @State private var showNetworkAlert = false
     
     //@ObservedRealmObject var vehicle: vehicle_data
-    var vehicle: Vehicle
+    // var vehicle: Vehicle
+    @Binding var vehicle: Vehicle
     //var realm: Realm
     @State private var showingCommandView = false
     @State private var observer: NSKeyValueObservation?
@@ -88,12 +89,12 @@ struct VehicleDetailView: View {
     }
 }
 
-struct DeviceDetailView_Previews: PreviewProvider {
-    static var previews: some View {
-        //let realm = try! Realm()
-        var vehicle : Vehicle
+// struct DeviceDetailView_Previews: PreviewProvider {
+//     static var previews: some View {
+//         //let realm = try! Realm()
+//         var vehicle : Vehicle
 
-        VehicleDetailView(vehicle: vehicle)//vehicle_data(), realm: realm)
-    }
-}
+//         VehicleDetailView(vehicle: vehicle)//vehicle_data(), realm: realm)
+//     }
+// }
 
