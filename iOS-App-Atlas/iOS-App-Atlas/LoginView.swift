@@ -52,6 +52,7 @@ struct LoginView: View {
                     print("Logged in")
 
                 }
+                
             }.disabled(isLoggingIn)
         }
     }

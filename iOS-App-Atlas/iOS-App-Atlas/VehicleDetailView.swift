@@ -7,26 +7,31 @@
 
 import SwiftUI
 import RealmSwift
+//import MongoKitten
+
 
 struct VehicleDetailView: View {
+    
     @EnvironmentObject var networkMonitor: NetworkMonitor
     @State private var showNetworkAlert = false
     
-    @ObservedRealmObject var vehicle: vehicle_data
-    var realm: Realm
+    //@ObservedRealmObject var vehicle: vehicle_data
+    var vehicle: Vehicle
+    //var realm: Realm
     @State private var showingCommandView = false
     @State private var observer: NSKeyValueObservation?
-    
+
     var body: some View {
+
         NavigationView {
             Form {
                 Section(header: Text("CONTROLS")) {
-                    Toggle(isOn: $vehicle.LightsOn) {
-                        Text("Car On")
-                    }
-                    Toggle(isOn: $vehicle.Driver_Door_Open) {
-                        Text("Open Driver Door")
-                    }
+                    // Toggle(isOn: $vehicle.LightsOn) {
+                    //     Text("Car On")
+                    // }
+                    // Toggle(isOn: vehicle.Driver_Door_Open) {
+                    //     Text("Open Driver Door")
+                    // }
                     Toggle(isOn: $vehicle.Hood_Open) {
                         Text("Open Hood")
                     }
@@ -67,8 +72,6 @@ struct VehicleDetailView: View {
                     }
                 }
                 
-            
-                
                 Button(action: {showingCommandView = true}){
                     Text("Send Command").frame(maxWidth: .infinity, alignment: .center)
                 }
@@ -87,7 +90,10 @@ struct VehicleDetailView: View {
 
 struct DeviceDetailView_Previews: PreviewProvider {
     static var previews: some View {
-        let realm = try! Realm()
-        VehicleDetailView(vehicle: vehicle_data(), realm: realm)
+        //let realm = try! Realm()
+        var vehicle : Vehicle
+
+        VehicleDetailView(vehicle: vehicle)//vehicle_data(), realm: realm)
     }
 }
+
