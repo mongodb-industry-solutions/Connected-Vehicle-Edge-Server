@@ -2,17 +2,16 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Realms;
-using Realms.Sync;
-using Realms.Sync.Exceptions;
-using MongoDB.Bson;
-
+using MQTTnet;
+using MQTTnet.Client;
+using MQTTnet.Client.Options;
+using MQTTnet.Extensions.ManagedClient;
+using System.Text;
 
 public class Animations : MonoBehaviour
 {
-    private Realm realm;
-    private IDisposable notificationToken;
-    public  Animator SportCar;
+    private IManagedMqttClient mqttClient;
+    public Animator SportCar;
 
     public GameObject FrontLights;
 
@@ -23,117 +22,81 @@ public class Animations : MonoBehaviour
 
     public GameObject SportCarVibration;
     private Coroutine carVibrationCoroutine;
-    
+
     private async void Start()
     {
-        
-        
-        if (RealmManager.Instance.RealmInstance != null)
-        {
-            // If Realm is already initialized
-            SubscribeToChanges(RealmManager.Instance.RealmInstance);
-        }
-        else
-        {
-            // Wait for Realm to be initialized
-            RealmManager.Instance.OnRealmReady += OnRealmReady;
-        }
+        var options = new ManagedMqttClientOptionsBuilder()
+            .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
+            .WithClientOptions(new MqttClientOptionsBuilder()
+                .WithClientId("UnityClient")
+                .WithTcpServer("23.22.137.53", 1883)  
+                .Build())
+            .Build();
+
+        mqttClient = new MqttFactory().CreateManagedMqttClient();
+        mqttClient.UseApplicationMessageReceivedHandler(HandleMqttMessageReceived);
+        await mqttClient.StartAsync(options);
+
+        await mqttClient.SubscribeAsync(new TopicFilterBuilder().WithTopic("vehicle/updates").Build());
     }
-    private void OnRealmReady()
-    {
-        SubscribeToChanges(RealmManager.Instance.RealmInstance);
-        // Unsubscribe from the event to avoid potential memory leaks
-        RealmManager.Instance.OnRealmReady -= OnRealmReady;
-    }
-    private void SubscribeToChanges(Realm realm)
-    {
 
+    private void HandleMqttMessageReceived(MqttApplicationMessageReceivedEventArgs e)
+    {
+        string payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
+        VehicleData modifiedObject = JsonUtility.FromJson<VehicleData>(payload);
 
-        if (realm == null)
+        // Lights Modifications
+        if (modifiedObject.LightsOn && !FrontLights.activeSelf)
         {
-            Debug.LogError("Realm is not initialized.");
-            return;
+            EngineSound.clip = EngineStart;
+            EngineSound.loop = false;
+            EngineSound.Play();
+            Invoke("EngineIdleSound", EngineSound.clip.length);
+            FrontLights.SetActive(true);
+            TailLights.SetActive(true);
+            StartVibration();
+        }
+        else if (!modifiedObject.LightsOn && FrontLights.activeSelf)
+        {
+            EngineSound.clip = EngineStop;
+            EngineSound.loop = false;
+            EngineSound.Play();
+            FrontLights.SetActive(false);
+            TailLights.SetActive(false);
+            StopVibration();
         }
 
-        var query = realm.All<vehicle_data>();
-
-        notificationToken = query.SubscribeForNotifications((sender, changes) =>
+        // Open Door Modifications
+        if (modifiedObject.DriverDoorOpen && !SportCar.GetBool("Door_Open"))
         {
-    
-            if (changes == null)
-            {
-                // This is the initial notification, sender contains all objects
-                Debug.Log($"Initial data: {sender.Count} items");
-            }
-            else
-            {
-                // Query results have changed
-                Debug.Log($"Insertions: {changes.InsertedIndices.Length}");
-                Debug.Log($"Deletions: {changes.DeletedIndices.Length}");
-                Debug.Log($"Modifications: {changes.ModifiedIndices.Length}");
-                
-                foreach (var index in changes.ModifiedIndices)
-                {
-                    var modifiedObject = sender[index];
-                    // Ligths Modifications
-                    if(modifiedObject.LightsOn==true && FrontLights.activeSelf==false)
-                    {
-                        EngineSound.clip = EngineStart;
-                        EngineSound.loop = false;
-                        EngineSound.Play();
-                        Invoke("EngineIdleSound", EngineSound.clip.length);
-                        FrontLights.SetActive(true);
-                        TailLights.SetActive(true);
-                        StartVibration();
-                        if (modifiedObject.BatteryCurrent == 0){
-                            realm.Write(() =>
-                            {
-                                modifiedObject.LightsOn = false;
-                            });
-                        }
-                    }
-                    else if(modifiedObject.LightsOn==false && FrontLights.activeSelf==true){
+            SportCar.SetTrigger("open_door");
+            SportCar.SetBool("Door_Open", true);
+        }
+        else if (!modifiedObject.DriverDoorOpen && SportCar.GetBool("Door_Open"))
+        {
+            SportCar.SetTrigger("close_door");
+            SportCar.SetBool("Door_Open", false);
+        }
 
-                        EngineSound.clip = EngineStop;
-                        EngineSound.loop = false;
-                        EngineSound.Play();
-                        FrontLights.SetActive(false);
-                        TailLights.SetActive(false);
-                        StopVibration();
-                    }
+        // Hood Modifications
+        if (modifiedObject.HoodOpen && !SportCar.GetBool("Hood_Open"))
+        {
+            SportCar.SetTrigger("open_hood");
+            SportCar.SetBool("Hood_Open", true);
+        }
+        else if (!modifiedObject.HoodOpen && SportCar.GetBool("Hood_Open"))
+        {
+            SportCar.SetTrigger("close_hood");
+            SportCar.SetBool("Hood_Open", false);
+        }
 
-                    // Open Door Modifications
-                    if(modifiedObject.DriverDoorOpen==true && SportCar.GetBool("Door_Open")==false)
-                    {
-                        SportCar.SetTrigger("open_door");
-                        SportCar.SetBool("Door_Open", true);
-                    }
-                    else if(modifiedObject.DriverDoorOpen==false && SportCar.GetBool("Door_Open")==true){
-                        SportCar.SetTrigger("close_door");
-                        SportCar.SetBool("Door_Open", false);
-                    }
-
-                    // Open Door Modifications
-                    if(modifiedObject.HoodOpen==true && SportCar.GetBool("Hood_Open")==false)
-                    {
-                        SportCar.SetTrigger("open_hood");
-                        SportCar.SetBool("Hood_Open", true);
-                    }
-                    else if(modifiedObject.HoodOpen==false && SportCar.GetBool("Hood_Open")==true){
-                        SportCar.SetTrigger("close_hood");
-                        SportCar.SetBool("Hood_Open", false);
-                    }
-
-                    // Print or process the modified object
-                    Debug.Log($"Modified object: {modifiedObject}");
-                }
-            }
-        });
+        // Print or process the modified object
+        Debug.Log($"Modified object: {modifiedObject}");
     }
 
     void EngineIdleSound()
     {
-        if(FrontLights.activeSelf)
+        if (FrontLights.activeSelf)
         {
             EngineSound.clip = EngineIdle;
             EngineSound.loop = true;
@@ -164,7 +127,7 @@ public class Animations : MonoBehaviour
     {
         // Original position of the car
         Vector3 originalPosition = SportCarVibration.transform.position;
-        float vibrationIntensity = 0.009f; // You can adjust this value for more or less vibration
+        float vibrationIntensity = 0.009f; // value can be adjusted for more or less vibration
 
         while (true)
         {
@@ -176,9 +139,7 @@ public class Animations : MonoBehaviour
             );
 
             // Wait for a short period of time before the next vibration
-            yield return new WaitForSeconds(0.07f); // Adjust the time for faster or slower vibration
+            yield return new WaitForSeconds(0.07f); // Adjust for faster or slower vibration
         }
     }
-
-    
 }

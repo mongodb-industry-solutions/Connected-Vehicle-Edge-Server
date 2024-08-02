@@ -2,61 +2,48 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Realms;
-using MongoDB.Bson;
+using Newtonsoft.Json;
 
 public class BatteryTelemetry : MonoBehaviour
 {
-    private vehicle_data vehicleData;
+    private VehicleData vehicleData;
     private bool reduceBatteryActive = false;
+
     private void Start()
     {
-        if (RealmManager.Instance.RealmInstance != null)
+        if (MQTTManager.Instance != null)
         {
-            // If Realm is already initialized
-            InitializeBattery(RealmManager.Instance.RealmInstance);
-            StartCoroutine(ReduceBattery(RealmManager.Instance.RealmInstance));
+            MQTTManager.Instance.OnMQTTConnected += OnMQTTConnected;
         }
         else
         {
-            // Wait for Realm to be initialized
-            RealmManager.Instance.OnRealmReady += OnRealmReady;
+            Debug.LogError("MQTTManager instance not found.");
         }
     }
-    private void OnRealmReady()
+
+    private void OnMQTTConnected()
     {
-        InitializeBattery(RealmManager.Instance.RealmInstance);
-        StartCoroutine(ReduceBattery(RealmManager.Instance.RealmInstance));
-        // Unsubscribe from the event to avoid potential memory leaks
-        RealmManager.Instance.OnRealmReady -= OnRealmReady;
+        // Subscribe to relevant topics here or handle data reception
+        InitializeBattery();
+        StartCoroutine(ReduceBattery());
     }
 
-    private void InitializeBattery(Realm realm)
+    private void InitializeBattery()
     {
-        var objectId = new ObjectId("658876fde27a68ff985cdb4d"); 
-        vehicleData = realm.Find<vehicle_data>(objectId);
-
-        if (vehicleData == null)
+        // Dummy data for initialization
+        vehicleData = new VehicleData
         {
-            Debug.LogError("vehicle_data object not found.");
-            return;
-        }
-
-        realm.Write(() =>
-        {
-            vehicleData.BatteryCurrent = 100;
-            vehicleData.BatteryTemp = 28;
-        });
-
+            BatteryCurrent = 100,
+            BatteryTemp = 28
+        };
     }
 
-    public IEnumerator ReduceBattery(Realm realm)
+    public IEnumerator ReduceBattery()
     {
-        // Check if vehicleData is not null
         if (vehicleData == null)
         {
-            Debug.LogError("vehicle_data is null.");
-            yield break; // Stop the coroutine
+            Debug.LogError("VehicleData is null.");
+            yield break;
         }
 
         reduceBatteryActive = true;
@@ -65,30 +52,16 @@ public class BatteryTelemetry : MonoBehaviour
             yield return new WaitForSeconds(2);
             if (vehicleData.LightsOn)
             {
-                realm.Write(() =>
-                {
-                    // vehicleData.BatteryCurrent = Math.Max(vehicleData.BatteryCurrent.Value - UnityEngine.Random.Range(0, 15), 0);
-                    vehicleData.BatteryTemp = vehicleData.BatteryTemp.Value + UnityEngine.Random.Range(-2, 3);
-                    if (vehicleData.BatteryCurrent == 0)
-                    {
-                        vehicleData.LightsOn = false;
-                        vehicleData.BatteryStatusOK = false;
-                    }
-                });
-            }
-            if (!reduceBatteryActive)
-            {
-                yield break;
+                vehicleData.BatteryCurrent -= 1; 
+                PublishBatteryData();
             }
         }
-        reduceBatteryActive = false;
     }
 
-    public void RestartReduceBattery()
+    private void PublishBatteryData()
     {
-        if (vehicleData != null && !reduceBatteryActive)
-        {
-            StartCoroutine(ReduceBattery(RealmManager.Instance.RealmInstance));
-        }
+        // Convert vehicleData to JSON and publish to MQTT
+        string jsonData = JsonConvert.SerializeObject(vehicleData);
+        MQTTManager.Instance.Publish("VehicleData", jsonData);
     }
 }
