@@ -2,15 +2,19 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using Realms;
-using Realms.Sync;
-using Realms.Sync.Exceptions;
+//using Realms;
+//using Realms.Sync;
+//using Realms.Sync.Exceptions;
 using MongoDB.Bson;
+using uPLibrary.Networking.M2Mqtt;
+using uPLibrary.Networking.M2Mqtt.Messages;
+using Newtonsoft.Json;
+using System.Threading;
 
 
 public class Animations : MonoBehaviour
 {
-    private Realm realm;
+    //private Realm realm;
     private IDisposable notificationToken;
     public  Animator SportCar;
 
@@ -23,12 +27,33 @@ public class Animations : MonoBehaviour
 
     public GameObject SportCarVibration;
     private Coroutine carVibrationCoroutine;
-    
+
+    private MqttClient client;
+    private string brokerAddress = "23.22.137.53";
+    private int brokerPort = 1883;
+    private string topic = "/control";
+
+    private SynchronizationContext unityContext;
+
     private async void Start()
     {
-        
-        
-        if (RealmManager.Instance.RealmInstance != null)
+
+        unityContext = SynchronizationContext.Current;
+
+        client = new MqttClient(brokerAddress, brokerPort, false, null, null, MqttSslProtocols.None);
+        string clientId = System.Guid.NewGuid().ToString();
+        client.Connect(clientId);
+        if (client.IsConnected)
+        {
+            Debug.Log("Connected to MQTT broker.");
+            client.Subscribe(new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+            client.MqttMsgPublishReceived += OnMqttMessageReceived;
+        }
+        else
+        {
+            Debug.LogError("Failed to connect to MQTT broker.");
+        }
+        /*if (RealmManager.Instance.RealmInstance != null)
         {
             // If Realm is already initialized
             SubscribeToChanges(RealmManager.Instance.RealmInstance);
@@ -37,18 +62,17 @@ public class Animations : MonoBehaviour
         {
             // Wait for Realm to be initialized
             RealmManager.Instance.OnRealmReady += OnRealmReady;
-        }
+        }*/
     }
-    private void OnRealmReady()
+    /*private void OnRealmReady()
     {
         SubscribeToChanges(RealmManager.Instance.RealmInstance);
         // Unsubscribe from the event to avoid potential memory leaks
         RealmManager.Instance.OnRealmReady -= OnRealmReady;
-    }
+    }*/
+    /*
     private void SubscribeToChanges(Realm realm)
     {
-
-
         if (realm == null)
         {
             Debug.LogError("Realm is not initialized.");
@@ -129,7 +153,74 @@ public class Animations : MonoBehaviour
                 }
             }
         });
+    }*/
+
+    private void OnMqttMessageReceived(object sender, MqttMsgPublishEventArgs e)
+    {
+        string message = System.Text.Encoding.UTF8.GetString(e.Message);
+        var payload = JsonConvert.DeserializeObject<MqttPayload>(message);
+        Debug.Log($"Received message: {message}");
+        unityContext.Post(_ => ProcessUpdate(payload), null);
     }
+
+    private void ProcessUpdate(MqttPayload payload)
+    {
+        var updatedFields = payload.updatedFields;
+
+        if (updatedFields.TryGetValue("LightsOn", out object lightsOnObj) && lightsOnObj is bool lightsOn)
+        {
+            if (lightsOn && !FrontLights.activeSelf)
+            {
+                EngineSound.clip = EngineStart;
+                EngineSound.loop = false;
+                EngineSound.Play();
+                Invoke("EngineIdleSound", EngineSound.clip.length);
+                FrontLights.SetActive(true);
+                TailLights.SetActive(true);
+                StartVibration();
+            }
+            else if (!lightsOn && FrontLights.activeSelf)
+            {
+                EngineSound.clip = EngineStop;
+                EngineSound.loop = false;
+                EngineSound.Play();
+                FrontLights.SetActive(false);
+                TailLights.SetActive(false);
+                StopVibration();
+            }
+        }
+
+        if (updatedFields.TryGetValue("DriverDoorOpen", out object driverDoorOpenObj) && driverDoorOpenObj is bool driverDoorOpen)
+        {
+            if (driverDoorOpen && !SportCar.GetBool("Door_Open"))
+            {
+                SportCar.SetTrigger("open_door");
+                SportCar.SetBool("Door_Open", true);
+            }
+            else if (!driverDoorOpen && SportCar.GetBool("Door_Open"))
+            {
+                SportCar.SetTrigger("close_door");
+                SportCar.SetBool("Door_Open", false);
+            }
+        }
+
+        if (updatedFields.TryGetValue("HoodOpen", out object hoodOpenObj) && hoodOpenObj is bool hoodOpen)
+        {
+            if (hoodOpen && !SportCar.GetBool("Hood_Open"))
+            {
+                SportCar.SetTrigger("open_hood");
+                SportCar.SetBool("Hood_Open", true);
+            }
+            else if (!hoodOpen && SportCar.GetBool("Hood_Open"))
+            {
+                SportCar.SetTrigger("close_hood");
+                SportCar.SetBool("Hood_Open", false);
+            }
+        }
+
+        // Add more field checks as needed
+    }
+
 
     void EngineIdleSound()
     {
@@ -180,5 +271,21 @@ public class Animations : MonoBehaviour
         }
     }
 
-    
+    void OnDestroy()
+    {
+        if (client != null && client.IsConnected)
+        {
+            client.Disconnect();
+            Debug.Log("Disconnected from MQTT broker.");
+        }
+    }
+
+    [Serializable]
+    public class MqttPayload
+    {
+        public string id;
+        public Dictionary<string, object> updatedFields;
+    }
+
+
 }
