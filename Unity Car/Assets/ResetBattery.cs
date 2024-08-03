@@ -6,6 +6,8 @@ using MQTTnet;
 using MQTTnet.Client;
 using System.Text;
 using System.Threading.Tasks;
+using MQTTnet.Client.Options;
+using System.Threading;
 
 public class ResetBattery : MonoBehaviour
 {

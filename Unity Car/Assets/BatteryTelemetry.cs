@@ -52,7 +52,7 @@ public class BatteryTelemetry : MonoBehaviour
             yield return new WaitForSeconds(2);
             if (vehicleData.LightsOn)
             {
-                vehicleData.BatteryCurrent -= 1; 
+                vehicleData.BatteryCurrent -= 1;
                 PublishBatteryData();
             }
         }

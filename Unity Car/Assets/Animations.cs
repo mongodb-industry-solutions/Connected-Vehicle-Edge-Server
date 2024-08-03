@@ -1,20 +1,18 @@
-using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using MQTTnet;
 using MQTTnet.Client;
 using MQTTnet.Client.Options;
-using MQTTnet.Extensions.ManagedClient;
 using System.Text;
+using MQTTnet.Client.Disconnecting;
+using MQTTnet.Client.Connecting;
 
 public class Animations : MonoBehaviour
 {
-    private IManagedMqttClient mqttClient;
+    private IMqttClient mqttClient;
     public Animator SportCar;
 
     public GameObject FrontLights;
-
     public GameObject TailLights;
 
     public AudioSource EngineSound;
@@ -25,22 +23,25 @@ public class Animations : MonoBehaviour
 
     private async void Start()
     {
-        var options = new ManagedMqttClientOptionsBuilder()
-            .WithAutoReconnectDelay(TimeSpan.FromSeconds(5))
-            .WithClientOptions(new MqttClientOptionsBuilder()
-                .WithClientId("UnityClient")
-                .WithTcpServer("23.22.137.53", 1883)  
-                .Build())
+        var factory = new MqttFactory();
+        mqttClient = factory.CreateMqttClient();
+
+        var options = new MqttClientOptionsBuilder()
+            .WithClientId("UnityClient")
+            .WithTcpServer("23.22.137.53", 1883)
+            .WithCleanSession()
             .Build();
 
-        mqttClient = new MqttFactory().CreateManagedMqttClient();
-        mqttClient.UseApplicationMessageReceivedHandler(HandleMqttMessageReceived);
-        await mqttClient.StartAsync(options);
+        mqttClient.UseApplicationMessageReceivedHandler(OnAppMessage);
+        mqttClient.UseConnectedHandler(OnConnected);
+        mqttClient.UseDisconnectedHandler(OnDisconnected);
 
-        await mqttClient.SubscribeAsync(new TopicFilterBuilder().WithTopic("vehicle/updates").Build());
+        await mqttClient.ConnectAsync(options);
+
+        await mqttClient.SubscribeAsync("vehicle/updates", MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce);
     }
 
-    private void HandleMqttMessageReceived(MqttApplicationMessageReceivedEventArgs e)
+    private void OnAppMessage(MqttApplicationMessageReceivedEventArgs e)
     {
         string payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
         VehicleData modifiedObject = JsonUtility.FromJson<VehicleData>(payload);
@@ -92,6 +93,16 @@ public class Animations : MonoBehaviour
 
         // Print or process the modified object
         Debug.Log($"Modified object: {modifiedObject}");
+    }
+
+    private void OnConnected(MqttClientConnectedEventArgs e)
+    {
+        Debug.Log("Connected to MQTT broker.");
+    }
+
+    private void OnDisconnected(MqttClientDisconnectedEventArgs e)
+    {
+        Debug.Log("Disconnected from MQTT broker.");
     }
 
     void EngineIdleSound()

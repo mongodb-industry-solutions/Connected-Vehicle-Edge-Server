@@ -3,10 +3,9 @@ using System;
 using System.Collections.Generic;
 using MQTTnet;
 using MQTTnet.Client;
-using MQTTnet.Client.Options;
-using MQTTnet.Client.Subscribing;
 using System.Text;
 using Newtonsoft.Json;
+using MQTTnet.Client.Options;
 
 public class MQTTManager : MonoBehaviour
 {
@@ -37,7 +36,7 @@ public class MQTTManager : MonoBehaviour
 
         var options = new MqttClientOptionsBuilder()
             .WithClientId("UnityClient")
-            .WithTcpServer("23.22.137.53", 1883)  
+            .WithTcpServer("23.22.137.53", 1883)
             .WithCleanSession()
             .Build();
 
@@ -46,11 +45,7 @@ public class MQTTManager : MonoBehaviour
             Debug.Log("Connected to MQTT broker.");
 
             // Subscribe to relevant topics here
-            var topicFilter = new MqttClientSubscribeOptionsBuilder()
-                .WithTopicFilter("vehicle/updates")
-                .Build();
-
-            await mqttClient.SubscribeAsync(topicFilter);
+            await mqttClient.SubscribeAsync("vehicle/updates", MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce);
             OnMQTTConnected?.Invoke();
         });
 
@@ -71,7 +66,25 @@ public class MQTTManager : MonoBehaviour
         }
         catch (Exception ex)
         {
-            Debug.LogError($@"Error connecting to MQTT broker. {ex.Message}");
+            Debug.LogError($"Error connecting to MQTT broker. {ex.Message}");
+        }
+    }
+
+    public async void Publish(string topic, string payload)
+    {
+        if (mqttClient.IsConnected)
+        {
+            var message = new MqttApplicationMessageBuilder()
+                .WithTopic(topic)
+                .WithPayload(payload)
+                .WithQualityOfServiceLevel(MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce)
+                .Build();
+
+            await mqttClient.PublishAsync(message);
+        }
+        else
+        {
+            Debug.LogError("MQTT client is not connected.");
         }
     }
 
