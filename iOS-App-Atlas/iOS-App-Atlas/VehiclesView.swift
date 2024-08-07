@@ -7,11 +7,10 @@
 
 import SwiftUI
 import RealmSwift
-import MongoKitten
 
 struct VehiclesView: View {
 
-    @State private var vehiclesList: [Vehicle] = []
+    @State private var vehiclesList: [VehicleListItem] = []
 
     // This view opens a synced realm.
     // We've injected a `flexibleSyncConfiguration` as an environment value,
@@ -27,7 +26,7 @@ struct VehiclesView: View {
             VStack(spacing:20){
                 List {
                     ForEach(vehiclesList, id: \._id) { vehicle in
-                        NavigationLink(destination: VehicleDetailView(vehicle: vehicle)){
+                        NavigationLink(destination: VehicleDetailView(vehicleId: vehicle.Driver_id)){
                             Text(vehicle.Vehicle_Name!)
                         }
                     }
@@ -72,7 +71,7 @@ struct VehiclesView: View {
         // }
     }
     
-    func getVehicles() async throws -> [Vehicle] {
+    func getVehicles() async throws -> [VehicleListItem] {
         let endpoint = "https://eu-west-1.aws.data.mongodb-api.com/app/connected-vehicle-edge-server-cbvdz/endpoint/vehicle_data"
         guard let url = URL(string: endpoint) else {throw VehicleError.invalidUrl}
         let (data, response) = try await URLSession.shared.data(from: url)
@@ -83,7 +82,7 @@ struct VehiclesView: View {
             let decoder = JSONDecoder()
             //print("Decoder 1", String(data: data, encoding: .utf8) ?? "")
             //print("Decoder 2", try decoder.decode([Vehicle].self, from: data))
-            return try decoder.decode([Vehicle].self, from: data)
+            return try decoder.decode([VehicleListItem].self, from: data)
         } catch{
             throw VehicleError.invalidData
         }
@@ -136,12 +135,18 @@ struct ErrorView: View {
 //     }
 // }
 
+struct VehicleListItem: Codable {
+    let _id: String
+    let Driver_id: String
+    let Vehicle_Name: String?
+}
+
 struct Vehicle: Codable {
     let _id: String
     let Battery_Current: Double?
     let Battery_Status_OK: Bool?
     let Battery_Temp: Double?
-    let Driver_id: String?
+    let Driver_id: String
     let LightsOn: Bool
     let Driver_Door_Open: Bool?
     let Hood_Open: Bool
