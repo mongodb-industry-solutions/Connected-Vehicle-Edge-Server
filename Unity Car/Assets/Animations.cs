@@ -1,53 +1,56 @@
+using System;
 using System.Collections;
 using UnityEngine;
-using MQTTnet;
-using MQTTnet.Client;
-using MQTTnet.Client.Options;
-using System.Text;
-using MQTTnet.Client.Disconnecting;
-using MQTTnet.Client.Connecting;
+using uPLibrary.Networking.M2Mqtt;
+using uPLibrary.Networking.M2Mqtt.Messages;
+using Newtonsoft.Json;
+using System.Threading;
 
 public class Animations : MonoBehaviour
 {
-    private IMqttClient mqttClient;
+    private MqttClient client;
     public Animator SportCar;
-
     public GameObject FrontLights;
     public GameObject TailLights;
-
     public AudioSource EngineSound;
     public AudioClip EngineStart, EngineIdle, EngineStop;
-
     public GameObject SportCarVibration;
     private Coroutine carVibrationCoroutine;
+    private string brokerAddress = "23.22.137.53";
+    private int brokerPort = 1883;
+    private string topic = "vehicle/updates";
+    private SynchronizationContext unityContext;
 
     private async void Start()
     {
-        var factory = new MqttFactory();
-        mqttClient = factory.CreateMqttClient();
+        unityContext = SynchronizationContext.Current;
 
-        var options = new MqttClientOptionsBuilder()
-            .WithClientId("UnityClient")
-            .WithTcpServer("23.22.137.53", 1883)
-            .WithCleanSession()
-            .Build();
-
-        mqttClient.UseApplicationMessageReceivedHandler(OnAppMessage);
-        mqttClient.UseConnectedHandler(OnConnected);
-        mqttClient.UseDisconnectedHandler(OnDisconnected);
-
-        await mqttClient.ConnectAsync(options);
-
-        await mqttClient.SubscribeAsync("vehicle/updates", MQTTnet.Protocol.MqttQualityOfServiceLevel.AtLeastOnce);
+        client = new MqttClient(brokerAddress, brokerPort, false, null, null, MqttSslProtocols.None);
+        string clientId = System.Guid.NewGuid().ToString();
+        client.Connect(clientId);
+        if (client.IsConnected)
+        {
+            Debug.Log("Connected to MQTT broker.");
+            client.Subscribe(new string[] { topic }, new byte[] { MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE });
+            client.MqttMsgPublishReceived += OnMqttMessageReceived;
+        }
+        else
+        {
+            Debug.LogError("Failed to connect to MQTT broker.");
+        }
     }
 
-    private void OnAppMessage(MqttApplicationMessageReceivedEventArgs e)
+    private void OnMqttMessageReceived(object sender, MqttMsgPublishEventArgs e)
     {
-        string payload = Encoding.UTF8.GetString(e.ApplicationMessage.Payload);
-        VehicleData modifiedObject = JsonUtility.FromJson<VehicleData>(payload);
+        string message = System.Text.Encoding.UTF8.GetString(e.Message);
+        var payload = JsonConvert.DeserializeObject<VehicleData>(message);
+        Debug.Log($"Received message: {message}");
+        unityContext.Post(_ => ProcessUpdate(payload), null);
+    }
 
-        // Lights Modifications
-        if (modifiedObject.LightsOn && !FrontLights.activeSelf)
+    private void ProcessUpdate(VehicleData payload)
+    {
+        if (payload.LightsOn && !FrontLights.activeSelf)
         {
             EngineSound.clip = EngineStart;
             EngineSound.loop = false;
@@ -57,7 +60,7 @@ public class Animations : MonoBehaviour
             TailLights.SetActive(true);
             StartVibration();
         }
-        else if (!modifiedObject.LightsOn && FrontLights.activeSelf)
+        else if (!payload.LightsOn && FrontLights.activeSelf)
         {
             EngineSound.clip = EngineStop;
             EngineSound.loop = false;
@@ -67,42 +70,27 @@ public class Animations : MonoBehaviour
             StopVibration();
         }
 
-        // Open Door Modifications
-        if (modifiedObject.DriverDoorOpen && !SportCar.GetBool("Door_Open"))
+        if (payload.DriverDoorOpen && !SportCar.GetBool("Door_Open"))
         {
             SportCar.SetTrigger("open_door");
             SportCar.SetBool("Door_Open", true);
         }
-        else if (!modifiedObject.DriverDoorOpen && SportCar.GetBool("Door_Open"))
+        else if (!payload.DriverDoorOpen && SportCar.GetBool("Door_Open"))
         {
             SportCar.SetTrigger("close_door");
             SportCar.SetBool("Door_Open", false);
         }
 
-        // Hood Modifications
-        if (modifiedObject.HoodOpen && !SportCar.GetBool("Hood_Open"))
+        if (payload.HoodOpen && !SportCar.GetBool("Hood_Open"))
         {
             SportCar.SetTrigger("open_hood");
             SportCar.SetBool("Hood_Open", true);
         }
-        else if (!modifiedObject.HoodOpen && SportCar.GetBool("Hood_Open"))
+        else if (!payload.HoodOpen && SportCar.GetBool("Hood_Open"))
         {
             SportCar.SetTrigger("close_hood");
             SportCar.SetBool("Hood_Open", false);
         }
-
-        // Print or process the modified object
-        Debug.Log($"Modified object: {modifiedObject}");
-    }
-
-    private void OnConnected(MqttClientConnectedEventArgs e)
-    {
-        Debug.Log("Connected to MQTT broker.");
-    }
-
-    private void OnDisconnected(MqttClientDisconnectedEventArgs e)
-    {
-        Debug.Log("Disconnected from MQTT broker.");
     }
 
     void EngineIdleSound()
@@ -117,7 +105,6 @@ public class Animations : MonoBehaviour
 
     void StartVibration()
     {
-        // Start vibration effect
         if (carVibrationCoroutine == null)
         {
             carVibrationCoroutine = StartCoroutine(VibrateCar());
@@ -126,7 +113,6 @@ public class Animations : MonoBehaviour
 
     void StopVibration()
     {
-        // Stop all coroutines to stop the vibration
         if (carVibrationCoroutine != null)
         {
             StopCoroutine(carVibrationCoroutine);
@@ -136,21 +122,35 @@ public class Animations : MonoBehaviour
 
     IEnumerator VibrateCar()
     {
-        // Original position of the car
         Vector3 originalPosition = SportCarVibration.transform.position;
-        float vibrationIntensity = 0.009f; // value can be adjusted for more or less vibration
+        float vibrationIntensity = 0.009f;
 
         while (true)
         {
-            // Simulate gentle vibration by small random position adjustments
             SportCarVibration.transform.position = originalPosition + new Vector3(
                 UnityEngine.Random.Range(-vibrationIntensity, vibrationIntensity),
                 UnityEngine.Random.Range(-vibrationIntensity, vibrationIntensity),
                 UnityEngine.Random.Range(-vibrationIntensity, vibrationIntensity)
             );
 
-            // Wait for a short period of time before the next vibration
-            yield return new WaitForSeconds(0.07f); // Adjust for faster or slower vibration
+            yield return new WaitForSeconds(0.07f);
         }
+    }
+
+    void OnDestroy()
+    {
+        if (client != null && client.IsConnected)
+        {
+            client.Disconnect();
+            Debug.Log("Disconnected from MQTT broker.");
+        }
+    }
+
+    [Serializable]
+    public class VehicleData
+    {
+        public bool LightsOn;
+        public bool DriverDoorOpen;
+        public bool HoodOpen;
     }
 }

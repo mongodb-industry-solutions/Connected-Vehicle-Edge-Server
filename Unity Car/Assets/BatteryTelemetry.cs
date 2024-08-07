@@ -1,31 +1,39 @@
 using System;
 using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
+using uPLibrary.Networking.M2Mqtt;
+using uPLibrary.Networking.M2Mqtt.Messages;
 using Newtonsoft.Json;
+using System.Threading;
+using System.Text;
 
 public class BatteryTelemetry : MonoBehaviour
 {
+    private MqttClient client;
+    private string brokerAddress = "23.22.137.53";
+    private int brokerPort = 1883;
+    private string topic = "VehicleData";
     private VehicleData vehicleData;
     private bool reduceBatteryActive = false;
+    private SynchronizationContext unityContext;
 
     private void Start()
     {
-        if (MQTTManager.Instance != null)
+        unityContext = SynchronizationContext.Current;
+
+        client = new MqttClient(brokerAddress, brokerPort, false, null, null, MqttSslProtocols.None);
+        string clientId = System.Guid.NewGuid().ToString();
+        client.Connect(clientId);
+        if (client.IsConnected)
         {
-            MQTTManager.Instance.OnMQTTConnected += OnMQTTConnected;
+            Debug.Log("Connected to MQTT broker.");
+            InitializeBattery();
+            StartCoroutine(ReduceBattery());
         }
         else
         {
-            Debug.LogError("MQTTManager instance not found.");
+            Debug.LogError("Failed to connect to MQTT broker.");
         }
-    }
-
-    private void OnMQTTConnected()
-    {
-        // Subscribe to relevant topics here or handle data reception
-        InitializeBattery();
-        StartCoroutine(ReduceBattery());
     }
 
     private void InitializeBattery()
@@ -34,11 +42,12 @@ public class BatteryTelemetry : MonoBehaviour
         vehicleData = new VehicleData
         {
             BatteryCurrent = 100,
-            BatteryTemp = 28
+            BatteryTemp = 28,
+            LightsOn = true 
         };
     }
 
-    public IEnumerator ReduceBattery()
+    private IEnumerator ReduceBattery()
     {
         if (vehicleData == null)
         {
@@ -62,6 +71,23 @@ public class BatteryTelemetry : MonoBehaviour
     {
         // Convert vehicleData to JSON and publish to MQTT
         string jsonData = JsonConvert.SerializeObject(vehicleData);
-        MQTTManager.Instance.Publish("VehicleData", jsonData);
+        client.Publish(topic, Encoding.UTF8.GetBytes(jsonData), MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, false);
+    }
+
+    private void OnDestroy()
+    {
+        if (client != null && client.IsConnected)
+        {
+            client.Disconnect();
+            Debug.Log("Disconnected from MQTT broker.");
+        }
+    }
+
+    [Serializable]
+    public class VehicleData
+    {
+        public int BatteryCurrent;
+        public int BatteryTemp;
+        public bool LightsOn;
     }
 }
