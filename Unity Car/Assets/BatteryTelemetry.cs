@@ -20,15 +20,20 @@ public class BatteryTelemetry : MonoBehaviour
     private void Start()
     {
         unityContext = SynchronizationContext.Current;
+        SetupMqttClient();
+        InitializeBattery();
+        StartCoroutine(ReduceBattery());
+    }
 
+    private void SetupMqttClient()
+    {
         client = new MqttClient(brokerAddress, brokerPort, false, null, null, MqttSslProtocols.None);
         string clientId = System.Guid.NewGuid().ToString();
         client.Connect(clientId);
+
         if (client.IsConnected)
         {
             Debug.Log("Connected to MQTT broker.");
-            InitializeBattery();
-            StartCoroutine(ReduceBattery());
         }
         else
         {
@@ -38,12 +43,11 @@ public class BatteryTelemetry : MonoBehaviour
 
     private void InitializeBattery()
     {
-        // Dummy data for initialization
         vehicleData = new VehicleData
         {
             BatteryCurrent = 100,
             BatteryTemp = 28,
-            LightsOn = true 
+            LightsOn = true
         };
     }
 
@@ -69,7 +73,6 @@ public class BatteryTelemetry : MonoBehaviour
 
     private void PublishBatteryData()
     {
-        // Convert vehicleData to JSON and publish to MQTT
         string jsonData = JsonConvert.SerializeObject(vehicleData);
         client.Publish(topic, Encoding.UTF8.GetBytes(jsonData), MqttMsgBase.QOS_LEVEL_AT_LEAST_ONCE, false);
     }

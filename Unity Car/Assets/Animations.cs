@@ -21,13 +21,18 @@ public class Animations : MonoBehaviour
     private string topic = "vehicle/updates";
     private SynchronizationContext unityContext;
 
-    private async void Start()
+    private void Start()
     {
         unityContext = SynchronizationContext.Current;
+        SetupMqttClient();
+    }
 
+    private void SetupMqttClient()
+    {
         client = new MqttClient(brokerAddress, brokerPort, false, null, null, MqttSslProtocols.None);
         string clientId = System.Guid.NewGuid().ToString();
         client.Connect(clientId);
+
         if (client.IsConnected)
         {
             Debug.Log("Connected to MQTT broker.");
@@ -45,65 +50,70 @@ public class Animations : MonoBehaviour
         string message = System.Text.Encoding.UTF8.GetString(e.Message);
         var payload = JsonConvert.DeserializeObject<VehicleData>(message);
         Debug.Log($"Received message: {message}");
-        unityContext.Post(_ => ProcessUpdate(payload), null);
+        unityContext.Post(_ => ProcessVehicleData(payload), null);
     }
 
-    private void ProcessUpdate(VehicleData payload)
+    private void ProcessVehicleData(VehicleData payload)
     {
-        if (payload.LightsOn && !FrontLights.activeSelf)
+        UpdateLights(payload.LightsOn);
+        UpdateDoor(payload.DriverDoorOpen, "Door_Open", "open_door", "close_door");
+        UpdateHood(payload.HoodOpen, "Hood_Open", "open_hood", "close_hood");
+    }
+
+    private void UpdateLights(bool lightsOn)
+    {
+        if (lightsOn && !FrontLights.activeSelf)
         {
-            EngineSound.clip = EngineStart;
-            EngineSound.loop = false;
-            EngineSound.Play();
-            Invoke("EngineIdleSound", EngineSound.clip.length);
+            PlayEngineSound(EngineStart, false);
+            Invoke(nameof(PlayEngineIdleSound), EngineStart.length);
             FrontLights.SetActive(true);
             TailLights.SetActive(true);
             StartVibration();
         }
-        else if (!payload.LightsOn && FrontLights.activeSelf)
+        else if (!lightsOn && FrontLights.activeSelf)
         {
-            EngineSound.clip = EngineStop;
-            EngineSound.loop = false;
-            EngineSound.Play();
+            PlayEngineSound(EngineStop, false);
             FrontLights.SetActive(false);
             TailLights.SetActive(false);
             StopVibration();
         }
+    }
 
-        if (payload.DriverDoorOpen && !SportCar.GetBool("Door_Open"))
+    private void UpdateDoor(bool doorOpen, string animatorBool, string openTrigger, string closeTrigger)
+    {
+        if (doorOpen && !SportCar.GetBool(animatorBool))
         {
-            SportCar.SetTrigger("open_door");
-            SportCar.SetBool("Door_Open", true);
+            SportCar.SetTrigger(openTrigger);
+            SportCar.SetBool(animatorBool, true);
         }
-        else if (!payload.DriverDoorOpen && SportCar.GetBool("Door_Open"))
+        else if (!doorOpen && SportCar.GetBool(animatorBool))
         {
-            SportCar.SetTrigger("close_door");
-            SportCar.SetBool("Door_Open", false);
-        }
-
-        if (payload.HoodOpen && !SportCar.GetBool("Hood_Open"))
-        {
-            SportCar.SetTrigger("open_hood");
-            SportCar.SetBool("Hood_Open", true);
-        }
-        else if (!payload.HoodOpen && SportCar.GetBool("Hood_Open"))
-        {
-            SportCar.SetTrigger("close_hood");
-            SportCar.SetBool("Hood_Open", false);
+            SportCar.SetTrigger(closeTrigger);
+            SportCar.SetBool(animatorBool, false);
         }
     }
 
-    void EngineIdleSound()
+    private void UpdateHood(bool hoodOpen, string animatorBool, string openTrigger, string closeTrigger)
+    {
+        UpdateDoor(hoodOpen, animatorBool, openTrigger, closeTrigger);
+    }
+
+    private void PlayEngineSound(AudioClip clip, bool loop)
+    {
+        EngineSound.clip = clip;
+        EngineSound.loop = loop;
+        EngineSound.Play();
+    }
+
+    private void PlayEngineIdleSound()
     {
         if (FrontLights.activeSelf)
         {
-            EngineSound.clip = EngineIdle;
-            EngineSound.loop = true;
-            EngineSound.Play();
+            PlayEngineSound(EngineIdle, true);
         }
     }
 
-    void StartVibration()
+    private void StartVibration()
     {
         if (carVibrationCoroutine == null)
         {
@@ -111,7 +121,7 @@ public class Animations : MonoBehaviour
         }
     }
 
-    void StopVibration()
+    private void StopVibration()
     {
         if (carVibrationCoroutine != null)
         {
@@ -120,7 +130,7 @@ public class Animations : MonoBehaviour
         }
     }
 
-    IEnumerator VibrateCar()
+    private IEnumerator VibrateCar()
     {
         Vector3 originalPosition = SportCarVibration.transform.position;
         float vibrationIntensity = 0.009f;
@@ -137,7 +147,7 @@ public class Animations : MonoBehaviour
         }
     }
 
-    void OnDestroy()
+    private void OnDestroy()
     {
         if (client != null && client.IsConnected)
         {

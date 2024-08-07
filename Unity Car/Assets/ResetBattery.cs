@@ -1,8 +1,10 @@
+using System.Collections;
 using UnityEngine;
 using uPLibrary.Networking.M2Mqtt;
 using uPLibrary.Networking.M2Mqtt.Messages;
 using Newtonsoft.Json;
 using System.Text;
+using System.Threading.Tasks;
 using System;
 
 public class ResetBattery : MonoBehaviour
@@ -14,9 +16,15 @@ public class ResetBattery : MonoBehaviour
 
     private void Start()
     {
+        SetupMqttClient();
+    }
+
+    private void SetupMqttClient()
+    {
         client = new MqttClient(brokerAddress, brokerPort, false, null, null, MqttSslProtocols.None);
         string clientId = System.Guid.NewGuid().ToString();
         client.Connect(clientId);
+
         if (client.IsConnected)
         {
             Debug.Log("Connected to MQTT broker.");
